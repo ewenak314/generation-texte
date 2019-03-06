@@ -26,6 +26,7 @@ adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumine
                   'schtroumpf'],
             'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente', 
                  'énorme', 'schtroumpf']}
+adj_devant_nom = ['beau', 'grand', 'belle', 'grande']
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
                 'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur']}
@@ -39,8 +40,9 @@ def groupe_nominal():
     gn = []
     genre = random.choice(['f', 'm'])
     determinant = random.choice(determinants[genre])
+    adj = random.choice(adjectifs[genre])
     nom = random.choice(noms[genre])
-    if nom[0] in voyelles:
+    if (nom[0] if not adj in adj_devant_nom else adj[0]) in voyelles:
         if determinant in ('le', 'la'):
             determinant = determinant[:-1] + "'"
         elif determinant in ('ma', 'sa', 'ta'):
@@ -49,8 +51,11 @@ def groupe_nominal():
             determinant = 'cet'
 
     gn.append(determinant)
+    if adj in adj_devant_nom:
+        gn.append(adj)
     gn.append(nom)
-    gn.append(random.choice(adjectifs[genre]))
+    if not adj in adj_devant_nom:
+        gn.append(adj)
     return gn
 
 def conjugaison(verbe, personne):
