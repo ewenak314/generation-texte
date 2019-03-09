@@ -31,11 +31,12 @@ pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
                 'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur']}
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroupfement']
+preps_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['gn', 'v', 'adv'], ['gn', 'v'], ['gn', 'vt', 'gn'], ['gn', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'gn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
-                     ['adv', ',', 'pp', 'vt', 'gn']]
-# TODO complément de lieu (préposition + groupe nominal)
+                     ['adv', ',', 'pp', 'vt', 'gn'], ['gn', 'vt', 'gn', 'ccl']]
+
 def groupe_nominal():
     gn = []
     genre = random.choice(['f', 'm'])
@@ -72,6 +73,10 @@ def conjugaison(verbe, personne):
         return radical + conjug_2e[personne]
     return '[{}]'.format(verbe)
 
+def ccl():
+    prep = random.choice(preps_lieu)
+    return [prep] + groupe_nominal()
+
 def genere_phrase():
     phrase = []
     structure_phrase = random.choice(structures_phrase)
@@ -92,6 +97,9 @@ def genere_phrase():
             phrase.append(conjugaison(verbe_infinitif, personne))
         elif nature == 'adv':
             phrase.append(random.choice(adverbes))
+        elif nature == 'ccl':
+            for m in ccl():
+                phrase.append(m)
         elif nature == ',':
             phrase.append(',')
     
