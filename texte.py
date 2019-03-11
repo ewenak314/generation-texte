@@ -35,7 +35,8 @@ preps_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['gn', 'v', 'adv'], ['gn', 'v'], ['gn', 'vt', 'gn'], ['gn', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'gn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
-                     ['adv', ',', 'pp', 'vt', 'gn'], ['gn', 'vt', 'gn', 'ccl']]
+                     ['adv', ',', 'pp', 'vt', 'gn'], ['gn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
+                     ['adv', ',', 'gn', 'vt', 'gn', 'ccl']]
 
 def groupe_nominal():
     gn = []
