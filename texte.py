@@ -133,6 +133,6 @@ if __name__ == '__main__':
         print(phrases[-1])
     e = speake3.Speake()
     e.set('voice', 'fr')
-    for p in phrases:
-        e.say(p)
-        e.talkback()
+    for i in range(0, 5):
+        e.say(random.choice(phrases))
+    e.talkback()
