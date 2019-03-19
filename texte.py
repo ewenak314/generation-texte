@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import random
+import speake3
 
 # True : verbe transitif 
 # False : verbe intransitif
@@ -29,7 +30,8 @@ adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumine
 adj_devant_nom = ['beau', 'grand', 'belle', 'grande']
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
-                'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur']}
+                'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur'],
+                'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs']}
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroupfement']
 preps_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
@@ -37,11 +39,29 @@ structures_phrase = [['gn', 'v', 'adv'], ['gn', 'v'], ['gn', 'vt', 'gn'], ['gn',
                      ['adv', ',', 'gn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'pp', 'vt', 'gn'], ['gn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
                      ['adv', ',', 'gn', 'vt', 'gn', 'ccl']]
+pl_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
+             'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
+pl_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
+pl_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
+pl_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+
+def pluriel(mot):
+    if mot[-1] in 'szx':
+        return mot
+    elif mot[-2:] in ['au', 'eu'] or mot in pl_en_oux and (not mot in pl_en_eus_aus):
+        return mot + 'x'
+    elif mot[-2:] == 'al' and not mot in pl_en_als:
+        return mot[:-2] + 'aux'
+    elif mot in pl_en_aux:
+        return mot[:-3] + 'aux'
+    else:
+        return mot + 's'
 
 def groupe_nominal():
     gn = []
     genre = random.choice(['f', 'm'])
-    determinant = random.choice(determinants[genre])
+    nombre = random.choice(['s', 'p'])
+    determinant = random.choice(determinants[genre]) if nombre == 's' else random.choice(determinants['pl'])
     adj = random.choice(adjectifs[genre])
     nom = random.choice(noms[genre])
     if (nom[0] if not adj in adj_devant_nom else adj[0]) in voyelles:
@@ -54,10 +74,10 @@ def groupe_nominal():
 
     gn.append(determinant)
     if adj in adj_devant_nom:
-        gn.append(adj)
-    gn.append(nom)
+        gn.append(adj if nombre == 's' else pluriel(adj))
+    gn.append(nom if nombre == 's' else pluriel(nom))
     if not adj in adj_devant_nom:
-        gn.append(adj)
+        gn.append(adj if nombre == 's' else pluriel(adj))
     return gn
 
 def conjugaison(verbe, personne):
@@ -106,6 +126,13 @@ def genere_phrase():
     
     return phrase
 
+phrases = []
 if __name__ == '__main__':
     for x in range(0, 100):
-        print((' '.join(genere_phrase()).capitalize() + '.').replace(' , ', ', '))
+        phrases.append((' '.join(genere_phrase()).capitalize() + '.').replace(' , ', ', '))
+        print(phrases[-1])
+    e = speake3.Speake()
+    e.set('voice', 'fr')
+    for p in phrases:
+        e.say(p)
+        e.talkback()
