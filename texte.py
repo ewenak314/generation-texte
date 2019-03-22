@@ -45,8 +45,6 @@ pl_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'van
 pl_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
 pl_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
 
-#TODO fonction 'genere_phrase' avec paramètre (ex: genere_phrase(v='applaudir', s='je'))
-
 def pluriel(mot):
     if mot[-1] in 'szx':
         return mot
@@ -101,47 +99,65 @@ def conjugaison(verbe, personne):
         return radical + conjug_2e[personne]
     return '[{}]'.format(verbe)
 
-def ccl(prep=None, gn=None):
+def complement_lieu(prep=None, gn=None):
     if prep is None:
         prep = random.choice(preps_lieu)
     if gn is None:
         gn = groupe_nominal()
     return [prep] + gn[0]
 
-def genere_phrase():
+def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
     phrase = []
-    structure_phrase = random.choice(structures_phrase)
+    if structure is None:
+        structure_phrase = random.choice(structures_phrase)
+    else:
+        structure_phrase = structure
     personne = 2
-    verbe_infinitif = (random.choice(list(verbes.keys())) if 'v' in structure_phrase
-                       else random.choice(list(verbes_transitifs)))
+    if v is None:
+        verbe_infinitif = (random.choice(list(verbes.keys())) if 'v' in structure_phrase
+                           else random.choice(list(verbes_transitifs)))
+    else:
+        verbe_infinitif = v
     for nature in structure_phrase:
         if nature == 'pp':
-            pp = random.choice(list(pronoms_personnels.keys()))
+            if s is None:
+                pp = random.choice(list(pronoms_personnels.keys()))
+            else:
+                pp = s
             personne = pronoms_personnels[pp]
             if pp == 'je' and verbe_infinitif[0] in voyelles:
                 pp = "J'"
             phrase.append(pp)
         elif nature == 'sgn':
-            gn = groupe_nominal()
+            if s is None:
+                gn = groupe_nominal()
+            else:
+                gn = s
             if gn[1] == 'p':
                 personne = 5
             for m in gn[0]:
                 phrase.append(m)
         elif nature == 'gn':
-            for m in groupe_nominal()[0]:
+            if cod is None:
+                gn = groupe_nominal()
+            else:
+                gn = cod
+            for m in gn[0]:
                 phrase.append(m)
         elif nature == 'v':
             phrase.append(conjugaison(verbe_infinitif, personne))
         elif nature == 'vt':
             phrase.append(conjugaison(verbe_infinitif, personne))
         elif nature == 'adv':
-            phrase.append(random.choice(adverbes))
+            adv = random.choice(adverbes) if adv is None else adv
+            phrase.append(adv)
         elif nature == 'ccl':
-            for m in ccl():
+            ccl = complement_lieu() if ccl is None else ccl
+            for m in ccl:
                 phrase.append(m)
         elif nature == ',':
             phrase.append(',')
-    
+
     return phrase
 
 phrases = []
