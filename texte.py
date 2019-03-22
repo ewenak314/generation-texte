@@ -35,15 +35,17 @@ determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'l
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroupfement']
 preps_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
-structures_phrase = [['gn', 'v', 'adv'], ['gn', 'v'], ['gn', 'vt', 'gn'], ['gn', 'vt', 'gn', 'adv'],
-                     ['adv', ',', 'gn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
-                     ['adv', ',', 'pp', 'vt', 'gn'], ['gn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
-                     ['adv', ',', 'gn', 'vt', 'gn', 'ccl']]
+structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'adv'],
+                     ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
+                     ['adv', ',', 'pp', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
+                     ['adv', ',', 'sgn', 'vt', 'gn', 'ccl']]
 pl_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
              'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
 pl_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
 pl_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
 pl_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+
+#TODO fonction 'genere_phrase' avec paramètre (ex: genere_phrase(v='applaudir', s='je'))
 
 def pluriel(mot):
     if mot[-1] in 'szx':
@@ -78,7 +80,7 @@ def groupe_nominal():
     gn.append(nom if nombre == 's' else pluriel(nom))
     if not adj in adj_devant_nom:
         gn.append(adj if nombre == 's' else pluriel(adj))
-    return gn
+    return [gn, nombre]
 
 def conjugaison(verbe, personne):
     if verbe in conjug_3e:
@@ -96,25 +98,33 @@ def conjugaison(verbe, personne):
 
 def ccl():
     prep = random.choice(preps_lieu)
-    return [prep] + groupe_nominal()
+    return [prep] + groupe_nominal()[0]
 
 def genere_phrase():
     phrase = []
     structure_phrase = random.choice(structures_phrase)
     personne = 2
+    verbe_infinitif = (random.choice(list(verbes.keys())) if 'v' in structure_phrase
+                       else random.choice(list(verbes_transitifs)))
     for nature in structure_phrase:
         if nature == 'pp':
             pp = random.choice(list(pronoms_personnels.keys()))
-            phrase.append(pp)
             personne = pronoms_personnels[pp]
-        if nature == 'gn': 
-            for m in groupe_nominal():
+            if pp == 'je' and verbe_infinitif[0] in voyelles:
+                pp = "J'"
+            phrase.append(pp)
+        elif nature == 'sgn':
+            gn = groupe_nominal()
+            if gn[1] == 'p':
+                personne = 5
+            for m in gn[0]:
+                phrase.append(m)
+        elif nature == 'gn':
+            for m in groupe_nominal()[0]:
                 phrase.append(m)
         elif nature == 'v':
-            verbe_infinitif = random.choice(list(verbes.keys()))
             phrase.append(conjugaison(verbe_infinitif, personne))
         elif nature == 'vt':
-            verbe_infinitif = random.choice(list(verbes_transitifs))
             phrase.append(conjugaison(verbe_infinitif, personne))
         elif nature == 'adv':
             phrase.append(random.choice(adverbes))
@@ -129,8 +139,10 @@ def genere_phrase():
 phrases = []
 if __name__ == '__main__':
     for x in range(0, 100):
-        phrases.append((' '.join(genere_phrase()).capitalize() + '.').replace(' , ', ', '))
+        phrase = genere_phrase()
+        phrases.append((' '.join(phrase).capitalize() + '.').replace(' , ', ', ').replace("' ", "'"))
         print(phrases[-1])
+        
     e = speake3.Speake()
     e.set('voice', 'fr')
     for i in range(0, 5):
