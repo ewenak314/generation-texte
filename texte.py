@@ -59,22 +59,27 @@ def pluriel(mot):
     else:
         return mot + 's'
 
-def groupe_nominal():
+def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
     gn = []
-    genre = random.choice(['f', 'm'])
-    nombre = random.choice(['s', 'p'])
-    determinant = random.choice(determinants[genre]) if nombre == 's' else random.choice(determinants['pl'])
-    adj = random.choice(adjectifs[genre])
-    nom = random.choice(noms[genre])
+    if genre is  None:
+        genre = random.choice(['f', 'm'])
+    if nombre is None:
+        nombre = random.choice(['s', 'p'])
+    if det is None:
+        det = random.choice(determinants[genre]) if nombre == 's' else random.choice(determinants['pl'])
+    if adj is None:
+        adj = random.choice(adjectifs[genre])
+    if nom is None:
+        nom = random.choice(noms[genre])
     if (nom[0] if not adj in adj_devant_nom else adj[0]) in voyelles:
-        if determinant in ('le', 'la'):
-            determinant = determinant[:-1] + "'"
-        elif determinant in ('ma', 'sa', 'ta'):
-            determinant = determinant[:-1] + 'on'
-        elif determinant == 'ce':
-            determinant = 'cet'
+        if det in ('le', 'la'):
+            det = det[:-1] + "'"
+        elif det in ('ma', 'sa', 'ta'):
+            det = det[:-1] + 'on'
+        elif det == 'ce':
+            det = 'cet'
 
-    gn.append(determinant)
+    gn.append(det)
     if adj in adj_devant_nom:
         gn.append(adj if nombre == 's' else pluriel(adj))
     gn.append(nom if nombre == 's' else pluriel(nom))
