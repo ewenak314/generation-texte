@@ -101,9 +101,12 @@ def conjugaison(verbe, personne):
         return radical + conjug_2e[personne]
     return '[{}]'.format(verbe)
 
-def ccl():
-    prep = random.choice(preps_lieu)
-    return [prep] + groupe_nominal()[0]
+def ccl(prep=None, gn=None):
+    if prep is None:
+        prep = random.choice(preps_lieu)
+    if gn is None:
+        gn = groupe_nominal()
+    return [prep] + gn[0]
 
 def genere_phrase():
     phrase = []
