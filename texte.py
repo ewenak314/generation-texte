@@ -48,6 +48,7 @@ adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumine
             'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente', 
                  'énorme', 'schtroumpf']}
 adj_devant_nom = ['beau', 'grand', 'belle', 'grande']
+adj_changeant_radical_voyelles = {'beau':'bel', 'nouveau':'nouvel', 'vieux':'vieil'}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
                 'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur'],
@@ -99,7 +100,13 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
 
     gn.append(det)
     if adj in adj_devant_nom:
-        gn.append(adj if nombre == 's' else pluriel(adj))
+        if nombre == 'p':
+            gn.append(pluriel(adj))
+        else:
+            if adj in adj_changeant_radical_voyelles and nom[0] in voyelles and genre == 'm':
+                gn.append(adj_changeant_radical_voyelles[adj])
+            else:
+                gn.append(adj)
     gn.append(nom if nombre == 's' else pluriel(nom))
     if not adj in adj_devant_nom:
         gn.append(adj if nombre == 's' else pluriel(adj))
