@@ -20,7 +20,6 @@
 #
 
 import random
-import speake3
 
 # True : verbe transitif 
 # False : verbe intransitif
@@ -187,15 +186,12 @@ def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
 
     return phrase
 
+def finalise_phrase(phrase):
+    return ' '.join(phrase).capitalize().replace(' , ', ', ').replace("' ", "'") + '.'
+
 phrases = []
 if __name__ == '__main__':
     for x in range(0, 100):
         phrase = genere_phrase()
-        phrases.append((' '.join(phrase).capitalize() + '.').replace(' , ', ', ').replace("' ", "'"))
+        phrases.append(finalise_phrase(phrase))
         print(phrases[-1])
-        
-    e = speake3.Speake()
-    e.set('voice', 'fr')
-    for i in range(0, 5):
-        e.say(random.choice(phrases))
-    e.talkback()
