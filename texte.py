@@ -58,7 +58,7 @@ voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'pp', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
-                     ['adv', ',', 'sgn', 'vt', 'gn', 'ccl']]
+                     ['adv', ',', 'sgn', 'vt', 'gn', 'ccl'], ['v', '-', 'pp', 'adv', '?'], ['Est-ce que', 'sgn', 'v', '?']]
 pl_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
              'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
 pl_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
@@ -144,13 +144,17 @@ def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
                            else random.choice(list(verbes_transitifs)))
     else:
         verbe_infinitif = v
+    if s is None:
+        if 'pp' in  structure_phrase:
+            s = random.choice(list(pronoms_personnels.keys()))
+            personne = pronoms_personnels[s]
+        else:
+            s = groupe_nominal()
+    else:
+        personne = pronoms_personnels[s] if isinstance(s, str) else (2 if s[1] == 's' else 5)
     for nature in structure_phrase:
         if nature == 'pp':
-            if s is None:
-                pp = random.choice(list(pronoms_personnels.keys()))
-            else:
-                pp = s
-            personne = pronoms_personnels[pp]
+            pp = s
             if pp == 'je' and verbe_infinitif[0] in voyelles:
                 pp = "J'"
             phrase.append(pp)
@@ -183,11 +187,26 @@ def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
                 phrase.append(m)
         elif nature == ',':
             phrase.append(',')
+        elif nature == '?':
+            phrase.append('?')
+        elif nature == '-':
+            if s[0] in voyelles:
+                if conjugaison(verbe_infinitif, personne)[-1] in 'dt':
+                    phrase.append('-')
+                else:
+                    phrase.append('-t-')
+            else:
+                phrase.append('-')
+        elif nature == 'Est-ce que':
+            phrase.append('Est-ce que')
 
     return phrase
 
 def finalise_phrase(phrase):
-    return ' '.join(phrase).capitalize().replace(' , ', ', ').replace("' ", "'") + '.'
+    if phrase[-1] == '?':
+        return ' '.join(phrase).replace(' , ', ', ').replace("' ", "'").capitalize().replace(' - ', '-').replace(' -t- ', '-t-')
+    else:
+        return (' '.join(phrase).replace(' , ', ', ').replace("' ", "'") + '.').capitalize()
 
 phrases = []
 if __name__ == '__main__':
