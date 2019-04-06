@@ -23,22 +23,36 @@ import random
 
 # True : verbe transitif 
 # False : verbe intransitif
-verbes = {'manger': [1, 'mang', True], 
-          'courir': [3, 'cour', False],
-          'dormir': [3, 'dor', False], 
-          'marcher': [1, 'march', False], 
-          'faire': [3, 'fai', True],
-          'fabriquer': [1, 'fabriqu', True], 
-          'rigoler': [1, 'rigol', False], 
-          'parler': [1, 'parl', False], 
-          'boire': [3, 'boi', True],
-          'casser': [1, 'cass', True], 
-          'applaudir': [2, 'applaud', True]}
-verbes_transitifs = [ k for k, v in verbes.items() if v[2] ]
+verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True}, 
+          'courir': {'groupe': 3, 'radical': 'cour', 'transitif': False},
+          'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False}, 
+          'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False}, 
+          'faire': {'groupe': 3, 'radical': 'fai','transitif': True},
+          'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True}, 
+          'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False}, 
+          'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False}, 
+          'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True},
+          'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True}, 
+          'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True},
+          'être': {'groupe': 3, 'radical': '', 'transitif': True}}
+verbes_transitifs = [ k for k, v in verbes.items() if v['transitif'] ]
+conjugaisons = {
+    'indicatif': {
+        'présent' : {
+            '1': ['e', 'es', 'e', 'ons', 'ez', 'ent'],
+            '2': ['is', 'is', 'it', 'issons', 'issez', 'issent']
+        },
+        'imparfait': {
+            '1': ['ais', 'ais', 'ait', 'ions', 'iez', 'aient'],
+            '2': ['issais', 'issais', 'issait', 'issions', 'issiez', 'issaient']
+        }
+}
+               }
 conjug_3e = { 'boire': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
               'courir': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
               'dormir': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
-              'faire': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'] }
+              'faire': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
+              'être': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont']}
 
 noms = {'m':['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf'], 
         'f':['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature']}
@@ -58,7 +72,8 @@ voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'pp', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
-                     ['adv', ',', 'sgn', 'vt', 'gn', 'ccl'], ['v', '-', 'pp', 'adv', '?'], ['Est-ce que', 'sgn', 'v', '?']]
+                     ['adv', ',', 'sgn', 'vt', 'gn', 'ccl'], ['v', '-', 'pp', 'adv', '?'], 
+                     ['Est-ce que', 'sgn', 'v', '?']]
 pl_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
              'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
 pl_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
@@ -111,18 +126,17 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
         gn.append(adj if nombre == 's' else pluriel(adj))
     return [gn, nombre]
 
-def conjugaison(verbe, personne):
+def conjugaison(verbe, personne, temps='pi'): # pi = présent indicatif, imp = imparfait
     if verbe in conjug_3e:
         return conjug_3e[verbe][personne]
     cara_verbe = verbes[verbe]
-    radical = cara_verbe[1]
-    groupe = cara_verbe[0]
-    conjug_1e = ['e', 'es', 'e', 'ons', 'ez', 'ent']
-    conjug_2e = ['is', 'is', 'it', 'issons', 'issez', 'issent']
+    radical = cara_verbe['radical']
+    groupe = cara_verbe['groupe']
+    terminaison = conjugaisons['indicatif']['présent' if temps == 'pi' else 'imparfait'][str(groupe)][personne]
     if groupe == 1:
-        return radical + ('e' if (conjug_1e[personne][0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + conjug_1e[personne]
+        return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
     elif groupe == 2:
-        return radical + conjug_2e[personne]
+        return radical + terminaison
     return '[{}]'.format(verbe)
 
 def complement_lieu(prep=None, gn=None):
@@ -132,12 +146,14 @@ def complement_lieu(prep=None, gn=None):
         gn = groupe_nominal()
     return [prep] + gn[0]
 
-def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
+def genere_phrase(structure=None, temps=None, v=None, s=None, cod=None, adv=None, ccl=None):
     phrase = []
     if structure is None:
         structure_phrase = random.choice(structures_phrase)
     else:
         structure_phrase = structure
+    if temps is None:
+        temps = random.choice(['pi', 'imp'])
     personne = 2
     if v is None:
         verbe_infinitif = (random.choice(list(verbes.keys())) if 'v' in structure_phrase
@@ -175,9 +191,9 @@ def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
             for m in gn[0]:
                 phrase.append(m)
         elif nature == 'v':
-            phrase.append(conjugaison(verbe_infinitif, personne))
+            phrase.append(conjugaison(verbe_infinitif, personne, temps))
         elif nature == 'vt':
-            phrase.append(conjugaison(verbe_infinitif, personne))
+            phrase.append(conjugaison(verbe_infinitif, personne, temps))
         elif nature == 'adv':
             adv = random.choice(adverbes) if adv is None else adv
             phrase.append(adv)
@@ -191,7 +207,7 @@ def genere_phrase(structure=None, v=None, s=None, cod=None, adv=None, ccl=None):
             phrase.append('?')
         elif nature == '-':
             if s[0] in voyelles:
-                if conjugaison(verbe_infinitif, personne)[-1] in 'dt':
+                if conjugaison(verbe_infinitif, personne, temps)[-1] in 'dt':
                     phrase.append('-')
                 else:
                     phrase.append('-t-')
