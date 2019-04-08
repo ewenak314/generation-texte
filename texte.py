@@ -156,7 +156,7 @@ def genere_phrase(structure=None, temps=None, v=None, s=None, cod=None, adv=None
         temps = random.choice(['pi', 'imp'])
     personne = 2
     if v is None:
-        verbe_infinitif = (random.choice(list(verbes.keys())) if 'v' in structure_phrase
+        verbe_infinitif = (random.choice([ v for v in list(verbes.keys()) if not v == 'être']) if 'v' in structure_phrase
                            else random.choice(list(verbes_transitifs)))
     else:
         verbe_infinitif = v
