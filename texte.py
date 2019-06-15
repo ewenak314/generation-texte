@@ -19,7 +19,11 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+#TODO phrases négatives
+
 import random
+
+#Données
 
 # True : verbe transitif 
 # False : verbe intransitif
@@ -39,62 +43,66 @@ verbes_transitifs = [ k for k, v in verbes.items() if v['transitif'] ]
 conjugaisons = {
     'indicatif': {
         'présent' : {
-            '1': ['e', 'es', 'e', 'ons', 'ez', 'ent'],
-            '2': ['is', 'is', 'it', 'issons', 'issez', 'issent']
+            1: ['e', 'es', 'e', 'ons', 'ez', 'ent'],
+            2: ['is', 'is', 'it', 'issons', 'issez', 'issent']
         },
         'imparfait': {
-            '1': ['ais', 'ais', 'ait', 'ions', 'iez', 'aient'],
-            '2': ['issais', 'issais', 'issait', 'issions', 'issiez', 'issaient']
+            1: ['ais', 'ais', 'ait', 'ions', 'iez', 'aient'],
+            2: ['issais', 'issais', 'issait', 'issions', 'issiez', 'issaient']
         }
+    }
 }
-               }
 conjug_3e = { 'boire': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
               'courir': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
               'dormir': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
               'faire': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
               'être': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont']}
 
-noms = {'m':['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf'], 
-        'f':['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature']}
+noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf'], 
+        'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature']}
 adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme', 
                   'schtroumpf'],
             'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente', 
                  'énorme', 'schtroumpf']}
 adj_devant_nom = ['beau', 'grand', 'belle', 'grande']
-adj_changeant_radical_voyelles = {'beau':'bel', 'nouveau':'nouvel', 'vieux':'vieil'}
+adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
                 'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur'],
                 'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs']}
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroupfement']
-preps_lieu = ['à', 'sur', 'dans']
+prepositions_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
                      ['adv', ',', 'pp', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
                      ['adv', ',', 'sgn', 'vt', 'gn', 'ccl'], ['v', '-', 'pp', 'adv', '?'], 
                      ['Est-ce que', 'sgn', 'v', '?']]
-pl_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
+pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
              'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
-pl_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
-pl_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
-pl_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+pluriel_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
+pluriel_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
+pluriel_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
 
 def pluriel(mot):
+    '''La fonction pluriel prend en paramètre
+    un adjectif ou un nom et le renvoie au pluriel'''
     if mot[-1] in 'szx':
         return mot
-    elif mot[-2:] in ['au', 'eu'] or mot in pl_en_oux and (not mot in pl_en_eus_aus):
+    elif (mot[-2:] in ['au', 'eu'] or mot in pluriel_en_oux) and (not mot in pluriel_en_eus_aus):
         return mot + 'x'
-    elif mot[-2:] == 'al' and not mot in pl_en_als:
+    elif mot[-2:] == 'al' and not mot in pluriel_en_als:
         return mot[:-2] + 'aux'
-    elif mot in pl_en_aux:
+    elif mot in pluriel_en_aux:
         return mot[:-3] + 'aux'
     else:
         return mot + 's'
 
 def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
+    '''Renvoie un groupe nominal (gn) dont
+    on peut spécifier certaines choses'''
     gn = []
-    if genre is  None:
+    if genre is None:
         genre = random.choice(['f', 'm'])
     if nombre is None:
         nombre = random.choice(['s', 'p'])
@@ -104,49 +112,51 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
         adj = random.choice(adjectifs[genre])
     if nom is None:
         nom = random.choice(noms[genre])
-    if (nom[0] if not adj in adj_devant_nom else adj[0]) in voyelles:
-        if det in ('le', 'la'):
-            det = det[:-1] + "'"
-        elif det in ('ma', 'sa', 'ta'):
-            det = det[:-1] + 'on'
-        elif det == 'ce':
-            det = 'cet'
-
-    gn.append(det)
+    #Pluriel
+    if nombre == 'p':
+        adj = pluriel(adj)
+        nom = pluriel(nom)
     if adj in adj_devant_nom:
-        if nombre == 'p':
-            gn.append(pluriel(adj))
-        else:
-            if adj in adj_changeant_radical_voyelles and nom[0] in voyelles and genre == 'm':
-                gn.append(adj_changeant_radical_voyelles[adj])
-            else:
-                gn.append(adj)
-    gn.append(nom if nombre == 's' else pluriel(nom))
-    if not adj in adj_devant_nom:
-        gn.append(adj if nombre == 's' else pluriel(adj))
-    return [gn, nombre]
+        gn = [det, adj, nom]
+    else:
+        gn = [det, nom, adj]
+    
+    #Correction de l'orthographe du déterminant en fonction du mot qu'il y a après
+    if gn[1][0] in voyelles:
+        if det in ('le', 'la'):
+            gn[0] = "l'"
+        elif det in ('ma', 'sa', 'ta'):
+            gn[0] = det[:-1] + 'on'
+        elif det == 'ce':
+            gn[0] = 'cet'
+            
+    return [gn, nombre, genre]
 
-def conjugaison(verbe, personne, temps='pi'): # pi = présent indicatif, imp = imparfait
-    if verbe in conjug_3e:
+def conjugaison(verbe, personne, temps='pi'): # pi = présent indicatif, imp = imparfait (indicatif)
+    '''Conjugue le verbe passé en paramètre
+    au temps et à la personne voulus'''
+    if verbes[verbe]['groupe'] == 3:
         return conjug_3e[verbe][personne]
     cara_verbe = verbes[verbe]
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
-    terminaison = conjugaisons['indicatif']['présent' if temps == 'pi' else 'imparfait'][str(groupe)][personne]
+    terminaison = conjugaisons['indicatif']['présent' if temps == 'pi' else 'imparfait'][groupe][personne]
     if groupe == 1:
         return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
     elif groupe == 2:
         return radical + terminaison
-    return '[{}]'.format(verbe)
+    return f'[{verbe}]'
 
 def complement_lieu(prep=None, gn=None):
+    'Génère complément circonstanciel de temps'
     if prep is None:
-        prep = random.choice(preps_lieu)
+        prep = random.choice(prepositions_lieu)
     if gn is None:
         gn = groupe_nominal()
     return [prep] + gn[0]
 
-def genere_phrase(structure=None, temps=None, v=None, s=None, cod=None, adv=None, ccl=None):
+def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
+    'Génère une phrase'
     phrase = []
     if structure is None:
         structure_phrase = random.choice(structures_phrase)
@@ -155,30 +165,40 @@ def genere_phrase(structure=None, temps=None, v=None, s=None, cod=None, adv=None
     if temps is None:
         temps = random.choice(['pi', 'imp'])
     personne = 2
-    if v is None:
-        verbe_infinitif = (random.choice([ v for v in list(verbes.keys()) if not v == 'être']) if 'v' in structure_phrase
+    
+    if verbe is None:
+        verbe_infinitif = (random.choice([ v for v in verbes.keys() if not v == 'être']) if 'v' in structure_phrase
                            else random.choice(list(verbes_transitifs)))
     else:
-        verbe_infinitif = v
-    if s is None:
+        verbe_infinitif = verbe
+    
+    #Définition de la personne
+    if sujet is None:
         if 'pp' in  structure_phrase:
-            s = random.choice(list(pronoms_personnels.keys()))
-            personne = pronoms_personnels[s]
+            sujet = random.choice(list(pronoms_personnels.keys()))
+            personne = pronoms_personnels[sujet]
         else:
-            s = groupe_nominal()
+            sujet = groupe_nominal()
     else:
-        personne = pronoms_personnels[s] if isinstance(s, str) else (2 if s[1] == 's' else 5)
+        if isinstance(sujet, str):
+            personne = pronoms_personnels[sujet]
+        else: 
+            if sujet[1] == 's':
+                personne = 2 
+            else:
+                personne = 5
+    
     for nature in structure_phrase:
         if nature == 'pp':
-            pp = s
+            pp = sujet
             if pp == 'je' and verbe_infinitif[0] in voyelles:
                 pp = "J'"
             phrase.append(pp)
         elif nature == 'sgn':
-            if s is None:
+            if sujet is None:
                 gn = groupe_nominal()
             else:
-                gn = s
+                gn = sujet
             if gn[1] == 'p':
                 personne = 5
             for m in gn[0]:
@@ -206,7 +226,7 @@ def genere_phrase(structure=None, temps=None, v=None, s=None, cod=None, adv=None
         elif nature == '?':
             phrase.append('?')
         elif nature == '-':
-            if s[0] in voyelles:
+            if sujet[0] in voyelles:
                 if conjugaison(verbe_infinitif, personne, temps)[-1] in 'dt':
                     phrase.append('-')
                 else:
