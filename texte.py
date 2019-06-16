@@ -132,7 +132,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
             
     return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
 
-def conjugaison(verbe, personne, temps='pi'): # pi = présent indicatif, imp = imparfait (indicatif)
+def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent indicatif, imp = imparfait (indicatif)
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
     if verbes[verbe]['groupe'] == 3:
@@ -140,7 +140,7 @@ def conjugaison(verbe, personne, temps='pi'): # pi = présent indicatif, imp = i
     cara_verbe = verbes[verbe]
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
-    terminaison = conjugaisons['indicatif']['présent' if temps == 'pi' else 'imparfait'][groupe][personne]
+    terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
     if groupe == 1:
         return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
     elif groupe == 2:
@@ -163,7 +163,7 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
     else:
         structure_phrase = structure
     if temps is None:
-        temps = random.choice(['pi', 'imp'])
+        temps = random.choice(['present_indicatif', 'imparfait'])
     personne = 2
     
     if verbe is None:
@@ -172,9 +172,14 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
     else:
         verbe_infinitif = verbe
     
+    if 'pp' in structure_phrase:
+        nature_sujet = 'pp'
+    else:
+        nature_sujet = 'gn'
+    
     #Définition de la personne
     if sujet is None:
-        if 'pp' in  structure_phrase:
+        if nature_sujet == 'pp':
             sujet = random.choice(list(pronoms_personnels.keys()))
             personne = pronoms_personnels[sujet]
         else:
@@ -207,14 +212,17 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
         elif nature == 'gn':
             if cod is None:
                 gn = groupe_nominal()
+                cod = gn
             else:
                 gn = cod
             for m in gn['contenu']:
                 phrase.append(m)
         elif nature == 'v':
-            phrase.append(conjugaison(verbe_infinitif, personne, temps))
+            verbe = conjugaison(verbe_infinitif, personne, temps)
+            phrase.append(verbe)
         elif nature == 'vt':
-            phrase.append(conjugaison(verbe_infinitif, personne, temps))
+            verbe = conjugaison(verbe_infinitif, personne, temps)
+            phrase.append(verbe)
         elif nature == 'adv':
             adv = random.choice(adverbes) if adv is None else adv
             phrase.append(adv)
@@ -237,7 +245,15 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
         elif nature == 'Est-ce que':
             phrase.append('Est-ce que')
 
-    return phrase
+    return {'contenu': phrase,
+            'structure': structure_phrase,
+            'temps': temps,
+            'personne': personne,
+            'sujet': {'contenu': sujet, 'nature': nature_sujet},
+            'verbe': {'conjugue': verbe, 'infinitif': verbe_infinitif},
+            'cod': cod,
+            'adv': adv,
+            'ccl': ccl}
 
 def finalise_phrase(phrase):
     if phrase[-1] == '?':
@@ -248,6 +264,6 @@ def finalise_phrase(phrase):
 phrases = []
 if __name__ == '__main__':
     for x in range(0, 100):
-        phrase = genere_phrase()
+        phrase = genere_phrase()['contenu']
         phrases.append(finalise_phrase(phrase))
         print(phrases[-1])

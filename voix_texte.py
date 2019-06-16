@@ -27,7 +27,7 @@ import speake3
 phrases = []
 if __name__ == '__main__':
     for x in range(0, 100):
-        phrase = genere_phrase()
+        phrase = genere_phrase()['contenu']
         phrases.append(finalise_phrase(phrase))
         print(phrases[-1])
         
