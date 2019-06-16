@@ -130,7 +130,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
         elif det == 'ce':
             gn[0] = 'cet'
             
-    return [gn, nombre, genre]
+    return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
 
 def conjugaison(verbe, personne, temps='pi'): # pi = présent indicatif, imp = imparfait (indicatif)
     '''Conjugue le verbe passé en paramètre
@@ -153,7 +153,7 @@ def complement_lieu(prep=None, gn=None):
         prep = random.choice(prepositions_lieu)
     if gn is None:
         gn = groupe_nominal()
-    return [prep] + gn[0]
+    return {'contenu': [prep] + gn['contenu'], 'prep': prep, 'gn': gn}
 
 def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
@@ -183,7 +183,7 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
         if isinstance(sujet, str):
             personne = pronoms_personnels[sujet]
         else: 
-            if sujet[1] == 's':
+            if sujet['nombre'] == 's':
                 personne = 2 
             else:
                 personne = 5
@@ -197,18 +197,19 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
         elif nature == 'sgn':
             if sujet is None:
                 gn = groupe_nominal()
+                sujet = gn
             else:
                 gn = sujet
-            if gn[1] == 'p':
+            if gn['nombre'] == 'p':
                 personne = 5
-            for m in gn[0]:
+            for m in gn['contenu']:
                 phrase.append(m)
         elif nature == 'gn':
             if cod is None:
                 gn = groupe_nominal()
             else:
                 gn = cod
-            for m in gn[0]:
+            for m in gn['contenu']:
                 phrase.append(m)
         elif nature == 'v':
             phrase.append(conjugaison(verbe_infinitif, personne, temps))
@@ -219,7 +220,7 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
             phrase.append(adv)
         elif nature == 'ccl':
             ccl = complement_lieu() if ccl is None else ccl
-            for m in ccl:
+            for m in ccl['contenu']:
                 phrase.append(m)
         elif nature == ',':
             phrase.append(',')
