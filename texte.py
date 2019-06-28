@@ -70,7 +70,7 @@ pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
                 'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur'],
                 'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs']}
-adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroupfement']
+adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroumpfement']
 prepositions_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'adv'],
@@ -98,14 +98,35 @@ def pluriel(mot):
     else:
         return mot + 's'
 
+pluriels = dict([ (m, pluriel(m)) for m in noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f'] if not pluriel(m) == m ] + 
+                 [ (determinants['m'][i], determinants['pl'][i]) for i in range(0, len(determinants['m']))])
+
 def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
     '''Renvoie un groupe nominal (gn) dont
     on peut spécifier certaines choses'''
     gn = []
+    #Genre
     if genre is None:
-        genre = random.choice(['f', 'm'])
+        if det is not None and not det in determinants['pl']:
+            genre = 'm' if det in determinants['m'] else 'f'
+        elif nom is not None:
+            if nom in noms['m'] or nom in [pluriel(n) for n in noms['m']]:
+                genre = 'm'
+            else:
+                genre = 'f'
+        elif adj is not None:
+            if adj in adjectifs['m'] or adj in [pluriel(m) for m in adjectifs['m']]:
+                genre = 'm'
+            else:
+                genre = 'f'
+        else:
+            genre = random.choice(['m', 'f'])
+                        
     if nombre is None:
-        nombre = random.choice(['s', 'p'])
+        if det is None and adj is None and nom is None:
+            nombre = random.choice(['s', 'p'])
+        else:
+            nombre = 's' if not (det in pluriels.values() or nom in pluriels.values() or adj in pluriels.values()) else 'p'
     if det is None:
         det = random.choice(determinants[genre]) if nombre == 's' else random.choice(determinants['pl'])
     if adj is None:
@@ -153,7 +174,12 @@ def complement_lieu(prep=None, gn=None):
         prep = random.choice(prepositions_lieu)
     if gn is None:
         gn = groupe_nominal()
-    return {'contenu': [prep] + gn['contenu'], 'prep': prep, 'gn': gn}
+    if prep == 'à' and gn['contenu'][0] == 'le':
+        prep = 'au'
+        gn['det'] = ''
+        gn['contenu'][0] = ''
+    complement = [prep] + gn['contenu']
+    return {'contenu': complement, 'prep': prep, 'gn': gn}
 
 def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
