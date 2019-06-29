@@ -184,10 +184,31 @@ def complement_lieu(prep=None, gn=None):
 def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
     phrase = []
-    if structure is None:
+    if (structure is None and sujet is None 
+        and verbe is None and cod is None 
+        and adv is None and ccl is None):
         structure_phrase = random.choice(structures_phrase)
     else:
-        structure_phrase = structure
+        if structure is not None:
+            structure_phrase = structure
+        else:
+            contenu_min = []
+            if sujet is not None:
+                if isinstance(sujet, str):
+                    contenu_min.append('pp')
+                else:
+                    contenu_min.append('sgn')
+            if verbe is not None:
+                contenu_min.append('v')
+            if cod is not None:
+                contenu_min.append('gn')
+            if adv is not None:
+                contenu_min.append('adv')
+            if ccl is not None:
+                contenu_min.append('ccl')
+            contenu_min = set(contenu_min)
+            structures_possibles = [ s for s in structures_phrase if contenu_min.difference(set(s)) == set()]
+            structure_phrase = random.choice(structures_possibles)
     if temps is None:
         temps = random.choice(['present_indicatif', 'imparfait'])
     personne = 2
