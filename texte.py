@@ -156,17 +156,19 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
 def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent indicatif, imp = imparfait (indicatif)
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
-    if verbes[verbe]['groupe'] == 3:
-        return conjug_3e[verbe][personne]
-    cara_verbe = verbes[verbe]
-    radical = cara_verbe['radical']
-    groupe = cara_verbe['groupe']
-    terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
-    if groupe == 1:
-        return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
-    elif groupe == 2:
-        return radical + terminaison
-    return f'[{verbe}]'
+    if verbe in verbes:
+        if verbes[verbe]['groupe'] == 3:
+            return conjug_3e[verbe][personne]
+        cara_verbe = verbes[verbe]
+        radical = cara_verbe['radical']
+        groupe = cara_verbe['groupe']
+        terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
+        if groupe == 1:
+            return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
+        elif groupe == 2:
+            return radical + terminaison
+    else:
+        return f'[{verbe}]'
 
 def complement_lieu(prep=None, gn=None):
     'Génère complément circonstanciel de temps'
@@ -215,9 +217,22 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
     
     if verbe is None:
         verbe_infinitif = (random.choice([ v for v in verbes.keys() if not v == 'être']) if 'v' in structure_phrase
-                           else random.choice(list(verbes_transitifs)))
+                           else random.choice(verbes_transitifs))
     else:
-        verbe_infinitif = verbe
+        if verbe in verbes:
+            verbe_infinitif = verbe
+        else:
+            if isinstance(verbe, dict):
+                verbes[verbe['infinitif']] = verbe
+                if verbe['groupe'] == 3:
+                    conjug_3e[verbe['infinitif']] = verbe['conjugaisons']
+                verbe_infinitif = verbe['infinitif']
+            else:
+                print(f"Ce programme ne connais pas le verbe {verbe}. \
+Il est possible de passer un dictionnaire en paramètre avec les champs \
+infinitif (str), groupe (int), radical (str) et transitif (bool) et aussi, \
+si le verbe est du troisième groupe, conjugaisons (list).")
+                verbe_infinitif = verbe
     
     if 'pp' in structure_phrase:
         nature_sujet = 'pp'
