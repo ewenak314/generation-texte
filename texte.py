@@ -19,8 +19,6 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-#TODO phrases négatives
-
 import random
 
 #Données
@@ -98,7 +96,7 @@ def pluriel(mot):
     else:
         return mot + 's'
 
-pluriels = dict([ (m, pluriel(m)) for m in noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f'] if not pluriel(m) == m ] + 
+pluriels = dict([ (m, pluriel(m)) for m in noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f'] if pluriel(m) != m ] + 
                  [ (determinants['m'][i], determinants['pl'][i]) for i in range(0, len(determinants['m']))])
 
 def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
@@ -183,7 +181,7 @@ def complement_lieu(prep=None, gn=None):
     complement = [prep] + gn['contenu']
     return {'contenu': complement, 'prep': prep, 'gn': gn}
 
-def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
+def genere_phrase(structure=None, temps=None, negatif=None, mot_negation=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
     phrase = []
     if (structure is None and sujet is None 
@@ -213,10 +211,16 @@ def genere_phrase(structure=None, temps=None, sujet=None, verbe=None, cod=None, 
             structure_phrase = random.choice(structures_possibles)
     if temps is None:
         temps = random.choice(['present_indicatif', 'imparfait'])
+    if negatif is None and mot_negation is None:
+        negatif = random.choice([False, True])
+    elif mot_negation is not None and negatif != False:
+        negatif = True
+    if negatif and mot_negation is None:
+        mot_negation = random.choice(['pas', 'plus', 'jamais', 'presque plus', 'presque jamais'])
     personne = 2
     
     if verbe is None:
-        verbe_infinitif = (random.choice([ v for v in verbes.keys() if not v == 'être']) if 'v' in structure_phrase
+        verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être']) if 'v' in structure_phrase
                            else random.choice(verbes_transitifs))
     else:
         if verbe in verbes:
@@ -281,7 +285,15 @@ si le verbe est du troisième groupe, conjugaisons (list).")
                 phrase.append(m)
         elif nature == 'v':
             verbe = conjugaison(verbe_infinitif, personne, temps)
-            phrase.append(verbe)
+            if negatif:
+                if not verbe[0] in voyelles:
+                    phrase.append('ne')
+                else:
+                    phrase.append("n'")
+                phrase.append(verbe)
+                phrase.append(mot_negation)
+            else:
+                phrase.append(verbe)
         elif nature == 'vt':
             verbe = conjugaison(verbe_infinitif, personne, temps)
             phrase.append(verbe)
@@ -306,10 +318,11 @@ si le verbe est du troisième groupe, conjugaisons (list).")
                 phrase.append('-')
         elif nature == 'Est-ce que':
             phrase.append('Est-ce que')
-
+            
     return {'contenu': phrase,
             'structure': structure_phrase,
             'temps': temps,
+            'negation': {'negatif': negatif, 'mot': mot_negation},
             'personne': personne,
             'sujet': {'contenu': sujet, 'nature': nature_sujet},
             'verbe': {'conjugue': verbe, 'infinitif': verbe_infinitif},
