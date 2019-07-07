@@ -71,11 +71,10 @@ determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'l
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroumpfement']
 prepositions_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
-structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'adv'],
-                     ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'gn', 'adv'],
-                     ['adv', ',', 'pp', 'vt', 'gn'], ['sgn', 'vt', 'gn', 'ccl'], ['pp', 'vt', 'gn', 'adv', 'ccl'], 
-                     ['adv', ',', 'sgn', 'vt', 'gn', 'ccl'], ['v', '-', 'pp', 'adv', '?'], 
-                     ['Est-ce que', 'sgn', 'v', '?']]
+structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'adv'],
+                     ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'cod', 'adv'],
+                     ['adv', ',', 'pp', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'ccl'], ['pp', 'vt', 'cod', 'adv', 'ccl'], 
+                     ['adv', ',', 'sgn', 'vt', 'cod', 'ccl']]
 pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
              'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
 pluriel_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
@@ -179,9 +178,9 @@ def complement_lieu(prep=None, gn=None):
         gn['det'] = ''
         gn['contenu'][0] = ''
     complement = [prep] + gn['contenu']
-    return {'contenu': complement, 'prep': prep, 'gn': gn}
+    return {'contenu': complement, 'prep': prep, 'cod': gn}
 
-def genere_phrase(structure=None, temps=None, negatif=None, mot_negation=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
+def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_negation=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
     phrase = []
     if (structure is None and sujet is None 
@@ -201,7 +200,7 @@ def genere_phrase(structure=None, temps=None, negatif=None, mot_negation=None, s
             if verbe is not None:
                 contenu_min.append('v')
             if cod is not None:
-                contenu_min.append('gn')
+                contenu_min.append('cod')
             if adv is not None:
                 contenu_min.append('adv')
             if ccl is not None:
@@ -209,8 +208,29 @@ def genere_phrase(structure=None, temps=None, negatif=None, mot_negation=None, s
             contenu_min = set(contenu_min)
             structures_possibles = [ s for s in structures_phrase if contenu_min.difference(set(s)) == set()]
             structure_phrase = random.choice(structures_possibles)
+            
+    transitif = 'vt' in structure_phrase
+    
     if temps is None:
         temps = random.choice(['present_indicatif', 'imparfait'])
+    if question is None:
+        question = random.choice([False, False, True])
+    if question:
+        if 'pp' in structure_phrase:
+            if transitif:
+                nouvelle_structure = ['vt', '-', 'pp']
+            else:
+                nouvelle_structure = ['v', '-', 'pp']
+        else:
+            if transitif:
+                nouvelle_structure = ['Est-ce que', 'sgn', 'vt']
+            else:
+                nouvelle_structure = ['Est-ce que', 'sgn', 'v']
+        for c in ['cod', 'adv', 'ccl']:
+            if c in structure_phrase:
+                nouvelle_structure.append(c)
+        nouvelle_structure.append('?')
+        structure_phrase = nouvelle_structure
     if negatif is None and mot_negation is None:
         negatif = random.choice([False, True])
     elif mot_negation is not None and negatif != False:
@@ -275,7 +295,7 @@ si le verbe est du troisième groupe, conjugaisons (list).")
                 personne = 5
             for m in gn['contenu']:
                 phrase.append(m)
-        elif nature == 'gn':
+        elif nature == 'cod':
             if cod is None:
                 gn = groupe_nominal()
                 cod = gn
@@ -322,10 +342,11 @@ si le verbe est du troisième groupe, conjugaisons (list).")
     return {'contenu': phrase,
             'structure': structure_phrase,
             'temps': temps,
+            'question': question, 
             'negation': {'negatif': negatif, 'mot': mot_negation},
             'personne': personne,
             'sujet': {'contenu': sujet, 'nature': nature_sujet},
-            'verbe': {'conjugue': verbe, 'infinitif': verbe_infinitif},
+            'verbe': {'conjugue': verbe, 'infinitif': verbe_infinitif, 'transitif': transitif},
             'cod': cod,
             'adv': adv,
             'ccl': ccl}
