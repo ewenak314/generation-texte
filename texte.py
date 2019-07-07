@@ -62,7 +62,7 @@ adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumine
                   'schtroumpf'],
             'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente', 
                  'énorme', 'schtroumpf']}
-adj_devant_nom = ['beau', 'grand', 'belle', 'grande']
+adjectifs_devant_nom = ['beau', 'grand', 'belle', 'grande']
 adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
@@ -130,11 +130,17 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
         adj = random.choice(adjectifs[genre])
     if nom is None:
         nom = random.choice(noms[genre])
+    
+    adj_devant_nom = adj in adjectifs_devant_nom
+    if adj in adj_changeant_radical_voyelles and nom[0] in voyelles and genre == 'm' and nombre == 's':
+        adj = adj_changeant_radical_voyelles[adj]
+    
     #Pluriel
     if nombre == 'p':
         adj = pluriel(adj)
         nom = pluriel(nom)
-    if adj in adj_devant_nom:
+    
+    if adj_devant_nom:
         gn = [det, adj, nom]
     else:
         gn = [det, nom, adj]
