@@ -36,7 +36,12 @@ verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True},
           'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True},
           'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True}, 
           'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True},
-          'être': {'groupe': 3, 'radical': '', 'transitif': True}}
+          'être': {'groupe': 3, 'radical': '', 'transitif': True},
+          'sculpter': {'groupe': 1, 'radical': 'sculpt', 'transitif': True},
+          'prendre': {'groupe': 3, 'radical': 'prend', 'transitif': True},
+          'souvenir': {'groupe': 3, 'radical': 'souv', 'transitif': True},
+          'avoir': {'groupe': 3, 'radical': '', 'transitif': True}, 
+          'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True}}
 verbes_transitifs = [ k for k, v in verbes.items() if v['transitif'] ]
 conjugaisons = {
     'indicatif': {
@@ -54,21 +59,28 @@ conjug_3e = { 'boire': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
               'courir': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
               'dormir': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
               'faire': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
-              'être': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont']}
+              'être': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
+              'prendre': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
+              'souvenir': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'],
+              'avoir': ['ai', 'as', 'a', 'avons', 'avez', 'ont']}
 
-noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf'], 
-        'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature']}
+noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
+              'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'], 
+        'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'masseur', 'discussion', 'éternité',
+              'bonté']}
 adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme', 
-                  'schtroumpf'],
+                  'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
             'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente', 
-                 'énorme', 'schtroumpf']}
+                 'énorme', 'schtroumpf', 'sage', 'embêtante', 'faible', 'fainéante', 'grossière']}
 adjectifs_devant_nom = ['beau', 'grand', 'belle', 'grande']
 adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
-determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur'],
-                'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur'],
-                'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs']}
-adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroumpfement']
+determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur', 'quelque'],
+                'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur', 'quelque'],
+                'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs', 'quelques']}
+adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroumpfement', 'jeunement',
+            'perpétuellement', 'fatalement', 'épisodiquement', 'farouchement', 'intégralement',
+            'individuellement', 'anticonstitutionnellement']
 prepositions_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'adv'],
@@ -80,6 +92,9 @@ pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémo
 pluriel_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
 pluriel_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
 pluriel_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+
+class EmptyRootError(NameError):
+    pass
 
 def pluriel(mot):
     '''La fonction pluriel prend en paramètre
@@ -166,6 +181,8 @@ def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent ind
         radical = cara_verbe['radical']
         groupe = cara_verbe['groupe']
         terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
+        if radical == '':
+            raise EmptyRootError(verbe)
         if groupe == 1:
             return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
         elif groupe == 2:
