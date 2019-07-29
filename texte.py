@@ -23,24 +23,24 @@ import random
 
 #Données
 
-# True : verbe transitif 
+# True : verbe transitif
 # False : verbe intransitif
-verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True}, 
+verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True},
           'courir': {'groupe': 3, 'radical': 'cour', 'transitif': False},
-          'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False}, 
-          'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False}, 
+          'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False},
+          'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False},
           'faire': {'groupe': 3, 'radical': 'fai','transitif': True},
-          'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True}, 
-          'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False}, 
-          'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False}, 
+          'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True},
+          'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False},
+          'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False},
           'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True},
-          'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True}, 
+          'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True},
           'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True},
           'être': {'groupe': 3, 'radical': '', 'transitif': True},
           'sculpter': {'groupe': 1, 'radical': 'sculpt', 'transitif': True},
           'prendre': {'groupe': 3, 'radical': 'prend', 'transitif': True},
           'souvenir': {'groupe': 3, 'radical': 'souv', 'transitif': True},
-          'avoir': {'groupe': 3, 'radical': '', 'transitif': True}, 
+          'avoir': {'groupe': 3, 'radical': '', 'transitif': True},
           'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True}}
 verbes_transitifs = [ k for k, v in verbes.items() if v['transitif'] ]
 conjugaisons = {
@@ -65,12 +65,12 @@ conjug_3e = { 'boire': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
               'avoir': ['ai', 'as', 'a', 'avons', 'avez', 'ont']}
 
 noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
-              'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'], 
+              'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
         'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'masseur', 'discussion', 'éternité',
               'bonté']}
-adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme', 
+adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme',
                   'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
-            'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente', 
+            'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente',
                  'énorme', 'schtroumpf', 'sage', 'embêtante', 'faible', 'fainéante', 'grossière']}
 adjectifs_devant_nom = ['beau', 'grand', 'belle', 'grande']
 adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
@@ -85,7 +85,7 @@ prepositions_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'adv'],
                      ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'cod', 'adv'],
-                     ['adv', ',', 'pp', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'ccl'], ['pp', 'vt', 'cod', 'adv', 'ccl'], 
+                     ['adv', ',', 'pp', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'ccl'], ['pp', 'vt', 'cod', 'adv', 'ccl'],
                      ['adv', ',', 'sgn', 'vt', 'cod', 'ccl']]
 pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
              'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
@@ -110,7 +110,7 @@ def pluriel(mot):
     else:
         return mot + 's'
 
-pluriels = dict([ (m, pluriel(m)) for m in noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f'] if pluriel(m) != m ] + 
+pluriels = dict([ (m, pluriel(m)) for m in noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f'] if pluriel(m) != m ] +
                  [ (determinants['m'][i], determinants['pl'][i]) for i in range(0, len(determinants['m']))])
 
 def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
@@ -133,7 +133,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
                 genre = 'f'
         else:
             genre = random.choice(['m', 'f'])
-                        
+
     if nombre is None:
         if det is None and adj is None and nom is None:
             nombre = random.choice(['s', 'p'])
@@ -145,21 +145,21 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
         adj = random.choice(adjectifs[genre])
     if nom is None:
         nom = random.choice(noms[genre])
-    
+
     adj_devant_nom = adj in adjectifs_devant_nom
     if adj in adj_changeant_radical_voyelles and nom[0] in voyelles and genre == 'm' and nombre == 's':
         adj = adj_changeant_radical_voyelles[adj]
-    
+
     #Pluriel
     if nombre == 'p':
         adj = pluriel(adj)
         nom = pluriel(nom)
-    
+
     if adj_devant_nom:
         gn = [det, adj, nom]
     else:
         gn = [det, nom, adj]
-    
+
     #Correction de l'orthographe du déterminant en fonction du mot qu'il y a après
     if gn[1][0] in voyelles:
         if det in ('le', 'la'):
@@ -168,7 +168,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
             gn[0] = det[:-1] + 'on'
         elif det == 'ce':
             gn[0] = 'cet'
-            
+
     return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
 
 def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent indicatif, imp = imparfait (indicatif)
@@ -206,8 +206,8 @@ def complement_lieu(prep=None, gn=None):
 def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_negation=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
     phrase = []
-    if (structure is None and sujet is None 
-        and verbe is None and cod is None 
+    if (structure is None and sujet is None
+        and verbe is None and cod is None
         and adv is None and ccl is None):
         structure_phrase = random.choice(structures_phrase)
     else:
@@ -231,9 +231,9 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
             contenu_min = set(contenu_min)
             structures_possibles = [ s for s in structures_phrase if contenu_min.difference(set(s)) == set()]
             structure_phrase = random.choice(structures_possibles)
-            
+
     transitif = 'vt' in structure_phrase
-    
+
     if temps is None:
         temps = random.choice(['present_indicatif', 'imparfait'])
     if question is None:
@@ -261,7 +261,7 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
     if negatif and mot_negation is None:
         mot_negation = random.choice(['pas', 'plus', 'jamais', 'presque plus', 'presque jamais'])
     personne = 2
-    
+
     if verbe is None:
         verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être']) if 'v' in structure_phrase
                            else random.choice(verbes_transitifs))
@@ -280,12 +280,12 @@ Il est possible de passer un dictionnaire en paramètre avec les champs \
 infinitif (str), groupe (int), radical (str) et transitif (bool) et aussi, \
 si le verbe est du troisième groupe, conjugaisons (list).""")
                 verbe_infinitif = verbe
-    
+
     if 'pp' in structure_phrase:
         nature_sujet = 'pp'
     else:
         nature_sujet = 'gn'
-    
+
     #Définition de la personne
     if sujet is None:
         if nature_sujet == 'pp':
@@ -296,12 +296,12 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
     else:
         if isinstance(sujet, str):
             personne = pronoms_personnels[sujet]
-        else: 
+        else:
             if sujet['nombre'] == 's':
-                personne = 2 
+                personne = 2
             else:
                 personne = 5
-    
+
     for nature in structure_phrase:
         if nature == 'pp':
             pp = sujet
@@ -361,11 +361,11 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 phrase.append('-')
         elif nature == 'Est-ce que':
             phrase.append('Est-ce que')
-            
+
     return {'contenu': phrase,
             'structure': structure_phrase,
             'temps': temps,
-            'question': question, 
+            'question': question,
             'negation': {'negatif': negatif, 'mot': mot_negation},
             'personne': personne,
             'sujet': {'contenu': sujet, 'nature': nature_sujet},
