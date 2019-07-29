@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-
+# -*- coding: utf-8 -*-
 #
 # Génération de texte
 # Copyright (C) 2019 Ewenak@github
@@ -188,7 +188,7 @@ def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent ind
         elif groupe == 2:
             return radical + terminaison
     else:
-        return f'[{verbe}]'
+        return verbe
 
 def complement_lieu(prep=None, gn=None):
     'Génère complément circonstanciel de temps'
@@ -275,10 +275,10 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
                     conjug_3e[verbe['infinitif']] = verbe['conjugaisons']
                 verbe_infinitif = verbe['infinitif']
             else:
-                print(f"Ce programme ne connais pas le verbe {verbe}. \
+                print("""Ce programme ne connais pas le verbe {verbe}. \
 Il est possible de passer un dictionnaire en paramètre avec les champs \
 infinitif (str), groupe (int), radical (str) et transitif (bool) et aussi, \
-si le verbe est du troisième groupe, conjugaisons (list).")
+si le verbe est du troisième groupe, conjugaisons (list).""")
                 verbe_infinitif = verbe
     
     if 'pp' in structure_phrase:
