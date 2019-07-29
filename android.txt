@@ -1,0 +1,4 @@
+title=Générateur de texte
+author=Ewen AK
+orientation=landscape
+
