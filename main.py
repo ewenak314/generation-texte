@@ -14,7 +14,7 @@ class TexteApp(App):
 
     def build(self):
         box = BoxLayout(orientation='vertical')
-        b = Button(text='Klikit warnon')
+        b = Button(text='Klikit warnon', height=50, size_hint_y=None)
         self.label = Label(font_size=30)
         self.label.halign = 'center'
         self.label.valign = 'middle'
