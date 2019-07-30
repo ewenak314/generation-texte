@@ -303,12 +303,14 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 personne = 2
             else:
                 personne = 5
-
+    
+    verbe = conjugaison(verbe_infinitif, personne, temps)
+    
     for nature in structure_phrase:
         if nature == 'pp':
             pp = sujet
-            if pp == 'je' and verbe_infinitif[0] in voyelles:
-                pp = "J'"
+            if pp == 'je' and verbe[0] in voyelles and not negatif:
+                pp = "j'"
             phrase.append(pp)
         elif nature == 'sgn':
             if sujet is None:
@@ -328,8 +330,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 gn = cod
             for m in gn['contenu']:
                 phrase.append(m)
-        elif nature == 'v':
-            verbe = conjugaison(verbe_infinitif, personne, temps)
+        elif nature == 'v' or nature == 'vt':
             if negatif:
                 if not verbe[0] in voyelles:
                     phrase.append('ne')
@@ -339,9 +340,6 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 phrase.append(mot_negation)
             else:
                 phrase.append(verbe)
-        elif nature == 'vt':
-            verbe = conjugaison(verbe_infinitif, personne, temps)
-            phrase.append(verbe)
         elif nature == 'adv':
             adv = random.choice(adverbes) if adv is None else adv
             phrase.append(adv)
