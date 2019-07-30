@@ -214,22 +214,24 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
         if structure is not None:
             structure_phrase = structure
         else:
-            contenu_min = []
+            contenu_min = set()
             if sujet is not None:
                 if isinstance(sujet, str):
-                    contenu_min.append('pp')
+                    contenu_min.add('pp')
                 else:
-                    contenu_min.append('sgn')
+                    contenu_min.add('sgn')
             if verbe is not None:
-                contenu_min.append('v')
+                if verbe in verbes_transitifs:
+                    contenu_min.add('vt')
+                else:
+                    contenu_min.add('v')
             if cod is not None:
-                contenu_min.append('cod')
+                contenu_min.add('cod')
             if adv is not None:
-                contenu_min.append('adv')
+                contenu_min.add('adv')
             if ccl is not None:
-                contenu_min.append('ccl')
-            contenu_min = set(contenu_min)
-            structures_possibles = [ s for s in structures_phrase if contenu_min.difference(set(s)) == set()]
+                contenu_min.add('ccl')
+            structures_possibles = [ s for s in structures_phrase if contenu_min.issubset(set(s))]
             structure_phrase = random.choice(structures_possibles)
 
     transitif = 'vt' in structure_phrase
@@ -263,7 +265,7 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
     personne = 2
 
     if verbe is None:
-        verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être']) if 'v' in structure_phrase
+        verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être' and v != 'avoir']) if 'v' in structure_phrase
                            else random.choice(verbes_transitifs))
     else:
         if verbe in verbes:
