@@ -262,7 +262,6 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
         negatif = True
     if negatif and mot_negation is None:
         mot_negation = random.choice(['pas', 'plus', 'jamais', 'presque plus', 'presque jamais'])
-    personne = 2
 
     if verbe is None:
         verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être' and v != 'avoir']) if 'v' in structure_phrase
@@ -295,6 +294,10 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             personne = pronoms_personnels[sujet]
         else:
             sujet = groupe_nominal()
+            if sujet['nombre'] == 's':
+                personne = 2
+            else:
+                personne = 5
     else:
         if isinstance(sujet, str):
             personne = pronoms_personnels[sujet]
@@ -313,13 +316,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 pp = "j'"
             phrase.append(pp)
         elif nature == 'sgn':
-            if sujet is None:
-                gn = groupe_nominal()
-                sujet = gn
-            else:
-                gn = sujet
-            if gn['nombre'] == 'p':
-                personne = 5
+            gn = sujet
             for m in gn['contenu']:
                 phrase.append(m)
         elif nature == 'cod':
