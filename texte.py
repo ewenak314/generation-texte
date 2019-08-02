@@ -315,6 +315,8 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             if pp == 'je' and verbe[0] in voyelles and not negatif:
                 pp = "j'"
             phrase.append(pp)
+            if question and negatif:
+                phrase.append(mot_negation)
         elif nature == 'sgn':
             gn = sujet
             for m in gn['contenu']:
@@ -334,7 +336,8 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 else:
                     phrase.append("n'")
                 phrase.append(verbe)
-                phrase.append(mot_negation)
+                if not question:
+                    phrase.append(mot_negation)
             else:
                 phrase.append(verbe)
         elif nature == 'adv':
