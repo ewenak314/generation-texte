@@ -66,7 +66,7 @@ conjug_3e = { 'boire': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
 
 noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
               'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
-        'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'masseur', 'discussion', 'éternité',
+        'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'discussion', 'éternité',
               'bonté']}
 adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme',
                   'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
