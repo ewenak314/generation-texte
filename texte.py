@@ -55,14 +55,14 @@ conjugaisons = {
         }
     }
 }
-conjug_3e = { 'boire': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
-              'courir': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
-              'dormir': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
-              'faire': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
-              'être': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
-              'prendre': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
-              'souvenir': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'],
-              'avoir': ['ai', 'as', 'a', 'avons', 'avez', 'ont']}
+conjug_3e = { 'boire': {'indicatif': {'présent': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'], 'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']}},
+              'courir': {'indicatif': {'présent': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'], 'imparfait': ['courais', 'courais', 'courait', 'courions', 'couriez', 'couraient']}},
+              'dormir': {'indicatif': {'présent': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'], 'imparfait': ['dormais', 'dormais', 'dormait', 'dormions', 'dormiez', 'dormaient']}},
+              'faire': {'indicatif': {'présent': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'], 'imparfait': ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient']}},
+              'être': {'indicatif': {'présent': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'], 'imparfait': ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient']}},
+              'prendre': {'indicatif': {'présent': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'], 'imparfait': ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient']}},
+              'souvenir': {'indicatif': {'présent': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'], 'imparfait': ['souvenais', 'souvenais', 'souvenait', 'souvenions', 'souveniez', 'souvenaient']}},
+              'avoir': {'indicatif': {'présent': ['ai', 'as', 'a', 'avons', 'avez', 'ont'], 'imparfait': ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient']}}}
 
 noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
               'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
@@ -176,7 +176,7 @@ def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent ind
     au temps et à la personne voulus'''
     if verbe in verbes:
         if verbes[verbe]['groupe'] == 3:
-            return conjug_3e[verbe][personne]
+            return conjug_3e[verbe]['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
         cara_verbe = verbes[verbe]
         radical = cara_verbe['radical']
         groupe = cara_verbe['groupe']
