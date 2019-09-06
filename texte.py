@@ -25,23 +25,23 @@ import random
 
 # True : verbe transitif
 # False : verbe intransitif
-verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True},
-          'courir': {'groupe': 3, 'radical': 'cour', 'transitif': False},
-          'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False},
-          'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False},
-          'faire': {'groupe': 3, 'radical': 'fai','transitif': True},
-          'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True},
-          'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False},
-          'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False},
-          'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True},
-          'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True},
-          'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True},
-          'être': {'groupe': 3, 'radical': '', 'transitif': True},
-          'sculpter': {'groupe': 1, 'radical': 'sculpt', 'transitif': True},
-          'prendre': {'groupe': 3, 'radical': 'prend', 'transitif': True},
-          'souvenir': {'groupe': 3, 'radical': 'souv', 'transitif': True},
-          'avoir': {'groupe': 3, 'radical': '', 'transitif': True},
-          'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True}}
+verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True, 'pronominal': False},
+          'courir': {'groupe': 3, 'radical': 'cour', 'transitif': False, 'pronominal': False},
+          'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False, 'pronominal': False},
+          'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False, 'pronominal': False},
+          'faire': {'groupe': 3, 'radical': 'fai','transitif': True, 'pronominal': False},
+          'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True, 'pronominal': False},
+          'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False, 'pronominal': False},
+          'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False, 'pronominal': True},
+          'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True, 'pronominal': False},
+          'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True, 'pronominal': False},
+          'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True, 'pronominal': False},
+          'être': {'groupe': 3, 'radical': '', 'transitif': True, 'pronominal': False},
+          'sculpter': {'groupe': 1, 'radical': 'sculpt', 'transitif': True, 'pronominal': False},
+          'prendre': {'groupe': 3, 'radical': 'prend', 'transitif': True, 'pronominal': False},
+          'souvenir': {'groupe': 3, 'radical': 'souv', 'transitif': False, 'pronominal': True},
+          'avoir': {'groupe': 3, 'radical': '', 'transitif': True, 'pronominal': False},
+          'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True, 'pronominal': False}}
 verbes_transitifs = [ k for k, v in verbes.items() if v['transitif'] ]
 conjugaisons = {
     'indicatif': {
@@ -75,6 +75,7 @@ adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumine
 adjectifs_devant_nom = ['beau', 'grand', 'belle', 'grande']
 adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
+pronoms_personnels_reflechis = ['me', 'te', 'se', 'nous', 'vous', 'se']
 determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur', 'quelque'],
                 'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur', 'quelque'],
                 'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs', 'quelques']}
@@ -174,21 +175,24 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
 def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent indicatif, imp = imparfait (indicatif)
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
+    verbe_conjugue = []
     if verbe in verbes:
-        if verbes[verbe]['groupe'] == 3:
-            return conjug_3e[verbe]['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
         cara_verbe = verbes[verbe]
         radical = cara_verbe['radical']
         groupe = cara_verbe['groupe']
-        terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
-        if radical == '':
-            raise EmptyRootError(verbe)
-        if groupe == 1:
-            return radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
-        elif groupe == 2:
-            return radical + terminaison
-    else:
-        return verbe
+        if groupe == 3:
+            verbe_conjugue = conjug_3e[verbe]['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
+        else:
+            terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
+            if radical == '':
+                raise EmptyRootError(verbe)
+            if groupe == 1:
+                verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
+            elif groupe == 2:
+                verbe_conjugue = radical + terminaison
+        if cara_verbe['pronominal']:
+            verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
+    return verbe_conjugue
 
 def complement_lieu(prep=None, gn=None):
     'Génère complément circonstanciel de temps'
