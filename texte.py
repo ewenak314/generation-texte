@@ -176,22 +176,28 @@ def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent ind
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
     verbe_conjugue = []
-    if verbe in verbes:
-        cara_verbe = verbes[verbe]
-        radical = cara_verbe['radical']
-        groupe = cara_verbe['groupe']
-        if groupe == 3:
-            verbe_conjugue = conjug_3e[verbe]['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
+    if isinstance(verbe, dict):
+        cara_verbe = verbe
+    else:
+        cara_verbe = verbes.get(verbe,
+                                {'groupe': 1, 'radical': verbe.replace('er', ''), 'transitif': True, 'pronominal': False})
+    radical = cara_verbe['radical']
+    groupe = cara_verbe['groupe']
+    if groupe == 3:
+        if isinstance(verbe, dict):
+            verbe_conjugue = verbe['conjugaisons']['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
         else:
-            terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
-            if radical == '':
-                raise EmptyRootError(verbe)
-            if groupe == 1:
-                verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
-            elif groupe == 2:
-                verbe_conjugue = radical + terminaison
-        if cara_verbe['pronominal']:
-            verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
+            verbe_conjugue = conjug_3e[verbe]['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
+    else:
+        terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
+        if radical == '':
+            raise EmptyRootError(verbe)
+        if groupe == 1:
+            verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
+        elif groupe == 2:
+            verbe_conjugue = radical + terminaison
+    if cara_verbe['pronominal']:
+        verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
     return verbe_conjugue
 
 def complement_lieu(prep=None, gn=None):
@@ -271,20 +277,13 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
         verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être' and v != 'avoir']) if 'v' in structure_phrase
                            else random.choice(verbes_transitifs))
     else:
-        if verbe in verbes:
-            verbe_infinitif = verbe
-        else:
-            if isinstance(verbe, dict):
-                verbes[verbe['infinitif']] = verbe
-                if verbe['groupe'] == 3:
-                    conjug_3e[verbe['infinitif']] = verbe['conjugaisons']
-                verbe_infinitif = verbe['infinitif']
-            else:
-                print("""Ce programme ne connais pas le verbe {verbe}. \
+        verbe_infinitif = verbe
+        if not isinstance(verbe, dict) and not verbe in verbes:
+            print("""Ce programme ne connais pas le verbe {verbe}. \
 Il est possible de passer un dictionnaire en paramètre avec les champs \
-infinitif (str), groupe (int), radical (str) et transitif (bool) et aussi, \
+infinitif (str), groupe (int), radical (str), transitif (bool) et pronominal (bool) et aussi, \
 si le verbe est du troisième groupe, conjugaisons (list).""")
-                verbe_infinitif = verbe
+
 
     if 'pp' in structure_phrase:
         nature_sujet = 'pp'
@@ -310,9 +309,9 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 personne = 2
             else:
                 personne = 5
-    
+
     verbe = conjugaison(verbe_infinitif, personne, temps)
-    
+
     for nature in structure_phrase:
         if nature == 'pp':
             pp = sujet
