@@ -172,7 +172,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
 
     return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
 
-def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent indicatif, imp = imparfait (indicatif)
+def conjugaison(verbe, personne, temps='present'):
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
     verbe_conjugue = []
@@ -185,11 +185,11 @@ def conjugaison(verbe, personne, temps='present_indicatif'): # pi = présent ind
     groupe = cara_verbe['groupe']
     if groupe == 3:
         if isinstance(verbe, dict):
-            verbe_conjugue = verbe['conjugaisons']['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
+            verbe_conjugue = verbe['conjugaisons']['indicatif']['présent' if temps == 'present' else 'imparfait'][personne]
         else:
-            verbe_conjugue = conjug_3e[verbe]['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][personne]
+            verbe_conjugue = conjug_3e[verbe]['indicatif']['présent' if temps == 'present' else 'imparfait'][personne]
     else:
-        terminaison = conjugaisons['indicatif']['présent' if temps == 'present_indicatif' else 'imparfait'][groupe][personne]
+        terminaison = conjugaisons['indicatif']['présent' if temps == 'present' else 'imparfait'][groupe][personne]
         if radical == '':
             raise EmptyRootError(verbe)
         if groupe == 1:
@@ -247,7 +247,7 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
     transitif = 'vt' in structure_phrase
 
     if temps is None:
-        temps = random.choice(['present_indicatif', 'imparfait'])
+        temps = random.choice(['present', 'imparfait'])
     if question is None:
         question = random.choice([False, False, True])
     if question:
