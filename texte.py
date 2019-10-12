@@ -55,6 +55,10 @@ conjugaisons = {
         }
     }
 }
+
+temps_implementes = {'present': "Présent de l'indicatif",
+                     'imparfait': "Imparfait de l'indicatif"}
+
 conjug_3e = { 'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'], 'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']}},
               'courir': {'indicatif': {'present': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'], 'imparfait': ['courais', 'courais', 'courait', 'courions', 'couriez', 'couraient']}},
               'dormir': {'indicatif': {'present': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'], 'imparfait': ['dormais', 'dormais', 'dormait', 'dormions', 'dormiez', 'dormaient']}},
