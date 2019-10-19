@@ -20,6 +20,7 @@
 #
 
 import random
+import re
 
 #Données
 
@@ -183,8 +184,16 @@ def conjugaison(verbe, personne, temps='present'):
     if isinstance(verbe, dict):
         cara_verbe = verbe
     else:
-        cara_verbe = verbes.get(verbe,
-                                {'groupe': 1, 'radical': verbe.replace('er', ''), 'transitif': True, 'pronominal': False})
+        if verbe in verbes:
+            cara_verbe = verbes[verbe]
+        else:
+            m = re.search(r'(.+)([ei]r)$', verbe)
+            radical, terminaison = m.groups()
+            if terminaison == 'er':
+                groupe = 1
+            else:
+                groupe = 2
+            cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
     if groupe == 3:
