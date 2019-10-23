@@ -188,11 +188,14 @@ def conjugaison(verbe, personne, temps='present'):
             cara_verbe = verbes[verbe]
         else:
             m = re.search(r'(.+)([ei]r)$', verbe)
-            radical, terminaison = m.groups()
-            if terminaison == 'er':
-                groupe = 1
+            if m is not None:
+                radical, terminaison = m.groups()
+                if terminaison == 'er':
+                    groupe = 1
+                else:
+                    groupe = 2
             else:
-                groupe = 2
+                return f'{verbe}'
             cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
