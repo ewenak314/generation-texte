@@ -54,20 +54,40 @@ conjugaisons = {
             1: ['ais', 'ais', 'ait', 'ions', 'iez', 'aient'],
             2: ['issais', 'issais', 'issait', 'issions', 'issiez', 'issaient']
         }
-    }
+    },
+    'participe': {
+        'passe': {
+            1: 'é',
+            2: 'i'}}
 }
 
 temps_implementes = {'present': "Présent de l'indicatif",
                      'imparfait': "Imparfait de l'indicatif"}
 
-conjug_3e = { 'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'], 'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']}},
-              'courir': {'indicatif': {'present': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'], 'imparfait': ['courais', 'courais', 'courait', 'courions', 'couriez', 'couraient']}},
-              'dormir': {'indicatif': {'present': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'], 'imparfait': ['dormais', 'dormais', 'dormait', 'dormions', 'dormiez', 'dormaient']}},
-              'faire': {'indicatif': {'present': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'], 'imparfait': ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient']}},
-              'être': {'indicatif': {'present': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'], 'imparfait': ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient']}},
-              'prendre': {'indicatif': {'present': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'], 'imparfait': ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient']}},
-              'souvenir': {'indicatif': {'present': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'], 'imparfait': ['souvenais', 'souvenais', 'souvenait', 'souvenions', 'souveniez', 'souvenaient']}},
-              'avoir': {'indicatif': {'present': ['ai', 'as', 'a', 'avons', 'avez', 'ont'], 'imparfait': ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient']}}}
+conjug_3e = { 'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
+                                      'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']},
+                        'participe': {'passe': 'bu'}},
+              'courir': {'indicatif': {'present': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
+                                       'imparfait': ['courais', 'courais', 'courait', 'courions', 'couriez', 'couraient']},
+                         'participe': {'passe': 'couru'}},
+              'dormir': {'indicatif': {'present': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
+                                       'imparfait': ['dormais', 'dormais', 'dormait', 'dormions', 'dormiez', 'dormaient']},
+                         'participe': {'passe': 'dormi'}},
+              'faire': {'indicatif': {'present': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
+                                      'imparfait': ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient']},
+                        'participe': {'passe': 'fait'}},
+              'être': {'indicatif': {'present': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
+                                     'imparfait': ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient']},
+                       'participe': {'passe': 'été'}},
+              'prendre': {'indicatif': {'present': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
+                                        'imparfait': ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient']},
+                          'participe': {'passe': 'pris'}},
+              'souvenir': {'indicatif': {'present': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'],
+                                         'imparfait': ['souvenais', 'souvenais', 'souvenait', 'souvenions', 'souveniez', 'souvenaient']},
+                           'participe': {'passe': 'souvenu'}},
+              'avoir': {'indicatif': {'present': ['ai', 'as', 'a', 'avons', 'avez', 'ont'],
+                                      'imparfait': ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient']},
+                        'participe': {'passe': 'eu'}}}
 
 noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
               'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
@@ -177,9 +197,11 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
 
     return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
 
-def conjugaison(verbe, personne, temps='present'):
+def conjugaison(verbe, personne=None, temps='present'):
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
+    if personne is None and temps != 'participe_passe':
+        return verbe
     verbe_conjugue = []
     if isinstance(verbe, dict):
         cara_verbe = verbe
@@ -195,16 +217,24 @@ def conjugaison(verbe, personne, temps='present'):
                 else:
                     groupe = 2
             else:
-                return f'{verbe}'
+                return verbe
             cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
     if groupe == 3:
-        if isinstance(verbe, dict):
-            verbe_conjugue = verbe['conjugaisons']['indicatif'][temps][personne]
+        if temps == 'participe_passe':
+            if isinstance(verbe, dict):
+                verbe_conjugue = verbe['conjugaisons']['participe']['temps']
+            else:
+                verbe_conjugue = conjug_3e[verbe]['participe']['passe']
         else:
-            verbe_conjugue = conjug_3e[verbe]['indicatif'][temps][personne]
+            if isinstance(verbe, dict):
+                verbe_conjugue = verbe['conjugaisons']['indicatif'][temps][personne]
+            else:
+                verbe_conjugue = conjug_3e[verbe]['indicatif'][temps][personne]
     else:
+        if temps == 'participe_passe':
+            return radical + conjugaisons['participe']['passe'][groupe]
         terminaison = conjugaisons['indicatif'][temps][groupe][personne]
         if radical == '':
             raise EmptyRootError(verbe)
