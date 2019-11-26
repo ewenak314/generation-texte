@@ -62,7 +62,8 @@ conjugaisons = {
 }
 
 temps_implementes = {'present': "Présent de l'indicatif",
-                     'imparfait': "Imparfait de l'indicatif"}
+                     'imparfait': "Imparfait de l'indicatif",
+                     'passe_compose': 'Passé composé'}
 
 conjug_3e = { 'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
                                       'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']},
@@ -197,7 +198,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
 
     return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
 
-def conjugaison(verbe, personne=None, temps='present'):
+def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
     if personne is None and temps != 'participe_passe':
@@ -227,6 +228,11 @@ def conjugaison(verbe, personne=None, temps='present'):
                 verbe_conjugue = verbe['conjugaisons']['participe']['temps']
             else:
                 verbe_conjugue = conjug_3e[verbe]['participe']['passe']
+        elif temps == 'passe_compose':
+            if isinstance(verbe, dict):
+                verbe_conjugue = conjugaison('être' if verbe['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, 0, temps='participe_passe', ajouter_pronoms=False)
+            else:
+                verbe_conjugue = conjugaison('être' if verbes[verbe]['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, 0, temps='participe_passe', ajouter_pronoms=False)
         else:
             if isinstance(verbe, dict):
                 verbe_conjugue = verbe['conjugaisons']['indicatif'][temps][personne]
@@ -235,15 +241,22 @@ def conjugaison(verbe, personne=None, temps='present'):
     else:
         if temps == 'participe_passe':
             return radical + conjugaisons['participe']['passe'][groupe]
-        terminaison = conjugaisons['indicatif'][temps][groupe][personne]
-        if radical == '':
-            raise EmptyRootError(verbe)
-        if groupe == 1:
-            verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
-        elif groupe == 2:
-            verbe_conjugue = radical + terminaison
-    if cara_verbe['pronominal']:
-        verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
+        elif temps == 'passe_compose':
+            verbe_conjugue = conjugaison('être' if verbes[verbe]['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, temps='participe_passe', ajouter_pronoms=False)
+        else:
+            terminaison = conjugaisons['indicatif'][temps][groupe][personne]
+            if radical == '':
+                raise EmptyRootError(verbe)
+            if groupe == 1:
+                verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
+            elif groupe == 2:
+                verbe_conjugue = radical + terminaison
+    if ajouter_pronoms:
+        if cara_verbe['pronominal']:
+            if not verbe_conjugue[0] in voyelles or not pronoms_personnels_reflechis[personne][-1] in voyelles:
+                verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
+            else:
+                verbe_conjugue = pronoms_personnels_reflechis[personne][:-1] + "'" + verbe_conjugue
     return verbe_conjugue
 
 def complement_lieu(prep=None, gn=None):
