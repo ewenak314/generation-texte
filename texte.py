@@ -306,7 +306,7 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
     transitif = 'vt' in structure_phrase
 
     if temps is None:
-        temps = random.choice(['present', 'imparfait'])
+        temps = random.choice(list(temps_implementes.keys()))
     if question is None:
         question = random.choice([False, False, True])
     if question:
