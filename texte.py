@@ -338,10 +338,11 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
     else:
         verbe_infinitif = verbe
         if not isinstance(verbe, dict) and not verbe in verbes:
-            print("""Ce programme ne connais pas le verbe {verbe}. \
+            print(f"""Ce programme ne connais pas le verbe {verbe}. \
 Il est possible de passer un dictionnaire en paramètre avec les champs \
 infinitif (str), groupe (int), radical (str), transitif (bool) et pronominal (bool) et aussi, \
 si le verbe est du troisième groupe, conjugaisons (list).""")
+            return None
 
 
     if 'pp' in structure_phrase:
