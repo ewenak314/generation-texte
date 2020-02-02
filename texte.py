@@ -265,10 +265,15 @@ def complement_lieu(prep=None, gn=None):
         prep = random.choice(prepositions_lieu)
     if gn is None:
         gn = groupe_nominal()
-    if prep == 'à' and gn['contenu'][0] == 'le':
-        prep = 'au'
-        gn['det'] = ''
-        gn['contenu'][0] = ''
+    if prep == 'à':
+        if gn['contenu'][0] == 'le':
+            prep = 'au'
+            gn['det'] = ''
+            gn['contenu'][0] = ''
+        elif gn['contenu'][0] == 'les':
+            prep = 'aux'
+            gn['det'] = ''
+            gn['contenu'][0] = ''
     complement = [prep] + gn['contenu']
     return {'contenu': complement, 'prep': prep, 'cod': gn}
 
