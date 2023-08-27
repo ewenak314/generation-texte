@@ -22,31 +22,33 @@
 import random
 import re
 
-#Données
+# Données
 
 # True : verbe transitif
 # False : verbe intransitif
-verbes = {'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True, 'pronominal': False},
-          'courir': {'groupe': 3, 'radical': 'cour', 'transitif': False, 'pronominal': False},
-          'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False, 'pronominal': False},
-          'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False, 'pronominal': False},
-          'faire': {'groupe': 3, 'radical': 'fai','transitif': True, 'pronominal': False},
-          'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True, 'pronominal': False},
-          'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False, 'pronominal': False},
-          'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False, 'pronominal': True},
-          'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True, 'pronominal': False},
-          'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True, 'pronominal': False},
-          'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True, 'pronominal': False},
-          'être': {'groupe': 3, 'radical': '', 'transitif': True, 'pronominal': False},
-          'sculpter': {'groupe': 1, 'radical': 'sculpt', 'transitif': True, 'pronominal': False},
-          'prendre': {'groupe': 3, 'radical': 'prend', 'transitif': True, 'pronominal': False},
-          'souvenir': {'groupe': 3, 'radical': 'souv', 'transitif': False, 'pronominal': True},
-          'avoir': {'groupe': 3, 'radical': '', 'transitif': True, 'pronominal': False},
-          'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True, 'pronominal': False}}
-verbes_transitifs = [ k for k, v in verbes.items() if v['transitif'] ]
+verbes = {
+    'manger': {'groupe': 1, 'radical': 'mang', 'transitif': True, 'pronominal': False},
+    'courir': {'groupe': 3, 'radical': 'cour', 'transitif': False, 'pronominal': False},
+    'dormir': {'groupe': 3, 'radical': 'dor', 'transitif': False, 'pronominal': False},
+    'marcher': {'groupe': 1, 'radical': 'march', 'transitif': False, 'pronominal': False},
+    'faire': {'groupe': 3, 'radical': 'fai', 'transitif': True, 'pronominal': False},
+    'fabriquer': {'groupe': 1, 'radical': 'fabriqu', 'transitif': True, 'pronominal': False},
+    'rigoler': {'groupe': 1, 'radical': 'rigol', 'transitif': False, 'pronominal': False},
+    'parler': {'groupe': 1, 'radical': 'parl', 'transitif': False, 'pronominal': True},
+    'boire': {'groupe': 3, 'radical': 'boi', 'transitif': True, 'pronominal': False},
+    'casser': {'groupe': 1, 'radical': 'cass', 'transitif': True, 'pronominal': False},
+    'applaudir': {'groupe': 2, 'radical': 'applaud', 'transitif': True, 'pronominal': False},
+    'être': {'groupe': 3, 'radical': '', 'transitif': True, 'pronominal': False},
+    'sculpter': {'groupe': 1, 'radical': 'sculpt', 'transitif': True, 'pronominal': False},
+    'prendre': {'groupe': 3, 'radical': 'prend', 'transitif': True, 'pronominal': False},
+    'souvenir': {'groupe': 3, 'radical': 'souv', 'transitif': False, 'pronominal': True},
+    'avoir': {'groupe': 3, 'radical': '', 'transitif': True, 'pronominal': False},
+    'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True, 'pronominal': False},
+}
+verbes_transitifs = [k for k, v in verbes.items() if v['transitif']]
 conjugaisons = {
     'indicatif': {
-        'present' : {
+        'present': {
             1: ['e', 'es', 'e', 'ons', 'ez', 'ent'],
             2: ['is', 'is', 'it', 'issons', 'issez', 'issent']
         },
@@ -65,88 +67,100 @@ temps_implementes = {'present': "Présent de l'indicatif",
                      'imparfait': "Imparfait de l'indicatif",
                      'passe_compose': 'Passé composé'}
 
-conjug_3e = { 'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
-                                      'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']},
-                        'participe': {'passe': 'bu'}},
-              'courir': {'indicatif': {'present': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
-                                       'imparfait': ['courais', 'courais', 'courait', 'courions', 'couriez', 'couraient']},
-                         'participe': {'passe': 'couru'}},
-              'dormir': {'indicatif': {'present': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
-                                       'imparfait': ['dormais', 'dormais', 'dormait', 'dormions', 'dormiez', 'dormaient']},
-                         'participe': {'passe': 'dormi'}},
-              'faire': {'indicatif': {'present': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
-                                      'imparfait': ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient']},
-                        'participe': {'passe': 'fait'}},
-              'être': {'indicatif': {'present': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
-                                     'imparfait': ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient']},
-                       'participe': {'passe': 'été'}},
-              'prendre': {'indicatif': {'present': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
-                                        'imparfait': ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient']},
-                          'participe': {'passe': 'pris'}},
-              'souvenir': {'indicatif': {'present': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'],
-                                         'imparfait': ['souvenais', 'souvenais', 'souvenait', 'souvenions', 'souveniez', 'souvenaient']},
-                           'participe': {'passe': 'souvenu'}},
-              'avoir': {'indicatif': {'present': ['ai', 'as', 'a', 'avons', 'avez', 'ont'],
-                                      'imparfait': ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient']},
-                        'participe': {'passe': 'eu'}}}
+conjug_3e = {'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons', 'buvez', 'boivent'],
+                                     'imparfait': ['buvais', 'buvais', 'buvait', 'buvions', 'buviez', 'buvaient']},
+                       'participe': {'passe': 'bu'}},
+             'courir': {'indicatif': {'present': ['cours', 'cours', 'court', 'courons', 'courez', 'courent'],
+                                      'imparfait': ['courais', 'courais', 'courait', 'courions', 'couriez', 'couraient']},
+                        'participe': {'passe': 'couru'}},
+             'dormir': {'indicatif': {'present': ['dors', 'dors', 'dort', 'dormons', 'dormez', 'dorment'],
+                                      'imparfait': ['dormais', 'dormais', 'dormait', 'dormions', 'dormiez', 'dormaient']},
+                        'participe': {'passe': 'dormi'}},
+             'faire': {'indicatif': {'present': ['fais', 'fais', 'fait', 'faisons', 'faites', 'font'],
+                                     'imparfait': ['faisais', 'faisais', 'faisait', 'faisions', 'faisiez', 'faisaient']},
+                       'participe': {'passe': 'fait'}},
+             'être': {'indicatif': {'present': ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
+                                    'imparfait': ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient']},
+                      'participe': {'passe': 'été'}},
+             'prendre': {'indicatif': {'present': ['prends', 'prends', 'prend', 'prenons', 'prenez', 'prennent'],
+                                       'imparfait': ['prenais', 'prenais', 'prenait', 'prenions', 'preniez', 'prenaient']},
+                         'participe': {'passe': 'pris'}},
+             'souvenir': {'indicatif': {'present': ['souviens', 'souviens', 'souviens', 'souvenons', 'souvenez', 'souviennent'],
+                                        'imparfait': ['souvenais', 'souvenais', 'souvenait', 'souvenions', 'souveniez', 'souvenaient']},
+                          'participe': {'passe': 'souvenu'}},
+             'avoir': {'indicatif': {'present': ['ai', 'as', 'a', 'avons', 'avez', 'ont'],
+                                     'imparfait': ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient']},
+                       'participe': {'passe': 'eu'}}}
 
 noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
               'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
         'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'discussion', 'éternité',
               'bonté']}
-adjectifs = {'m':['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme',
-                  'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
-            'f':['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente',
-                 'énorme', 'schtroumpf', 'sage', 'embêtante', 'faible', 'fainéante', 'grossière']}
+adjectifs = {'m': ['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme',
+                   'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
+             'f': ['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente',
+                   'énorme', 'schtroumpf', 'sage', 'embêtante', 'faible', 'fainéante', 'grossière']}
 adjectifs_devant_nom = ['beau', 'grand', 'belle', 'grande']
 adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 pronoms_personnels_reflechis = ['me', 'te', 'se', 'nous', 'vous', 'se']
-determinants = {'m':['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur', 'quelque'],
-                'f':['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur', 'quelque'],
-                'pl':['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs', 'quelques']}
+determinants = {'m': ['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur', 'quelque'],
+                'f': ['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur', 'quelque'],
+                'pl': ['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs', 'quelques']}
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroumpfement', 'jeunement',
             'perpétuellement', 'fatalement', 'épisodiquement', 'farouchement', 'intégralement',
             'individuellement', 'anticonstitutionnellement']
 prepositions_lieu = ['à', 'sur', 'dans']
 voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'adv'],
-                     ['adv', ',', 'sgn','v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'cod', 'adv'],
+                     ['adv', ',', 'sgn', 'v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'cod', 'adv'],
                      ['adv', ',', 'pp', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'ccl'], ['pp', 'vt', 'cod', 'adv', 'ccl'],
                      ['adv', ',', 'sgn', 'vt', 'cod', 'ccl']]
 pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
-             'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
+                  'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
 pluriel_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
 pluriel_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
 pluriel_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
 
+
 class EmptyRootError(NameError):
     pass
+
 
 def pluriel(mot):
     '''La fonction pluriel prend en paramètre
     un adjectif ou un nom et le renvoie au pluriel'''
     if mot[-1] in 'szx':
         return mot
-    elif (mot[-2:] in ['au', 'eu'] or mot in pluriel_en_oux) and (not mot in pluriel_en_eus_aus):
+    elif (mot[-2:] in ['au', 'eu'] or mot in pluriel_en_oux) and (mot not in pluriel_en_eus_aus):
         return mot + 'x'
-    elif mot[-2:] == 'al' and not mot in pluriel_en_als:
+    elif mot[-2:] == 'al' and mot not in pluriel_en_als:
         return mot[:-2] + 'aux'
     elif mot in pluriel_en_aux:
         return mot[:-3] + 'aux'
     else:
         return mot + 's'
 
-pluriels = dict([ (m, pluriel(m)) for m in noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f'] if pluriel(m) != m ] +
-                 [ (determinants['m'][i], determinants['pl'][i]) for i in range(0, len(determinants['m']))])
+
+pluriels = dict(
+    [
+        (m, pluriel(m)) for m in (
+            noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f']
+        ) if pluriel(m) != m
+    ] + [
+        (determinants['m'][i], determinants['pl'][i])
+        for i in range(0, len(determinants['m']))
+    ]
+)
+
 
 def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
     '''Renvoie un groupe nominal (gn) dont
     on peut spécifier certaines choses'''
     gn = []
-    #Genre
+    # Genre
     if genre is None:
-        if det is not None and not det in determinants['pl']:
+        if det is not None and det not in determinants['pl']:
             genre = 'm' if det in determinants['m'] else 'f'
         elif nom is not None:
             if nom in noms['m'] or nom in [pluriel(n) for n in noms['m']]:
@@ -177,7 +191,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
     if adj in adj_changeant_radical_voyelles and nom[0] in voyelles and genre == 'm' and nombre == 's':
         adj = adj_changeant_radical_voyelles[adj]
 
-    #Pluriel
+    # Pluriel
     if nombre == 'p':
         adj = pluriel(adj)
         nom = pluriel(nom)
@@ -187,7 +201,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
     else:
         gn = [det, nom, adj]
 
-    #Correction de l'orthographe du déterminant en fonction du mot qu'il y a après
+    # Correction de l'orthographe du déterminant en fonction du mot qu'il y a après
     if gn[1][0] in voyelles:
         if det in ('le', 'la'):
             gn[0] = "l'"
@@ -197,6 +211,7 @@ def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
             gn[0] = 'cet'
 
     return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
+
 
 def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
     '''Conjugue le verbe passé en paramètre
@@ -259,6 +274,7 @@ def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
                 verbe_conjugue = pronoms_personnels_reflechis[personne][:-1] + "'" + verbe_conjugue
     return verbe_conjugue
 
+
 def complement_lieu(prep=None, gn=None):
     'Génère complément circonstanciel de temps'
     if prep is None:
@@ -277,12 +293,13 @@ def complement_lieu(prep=None, gn=None):
     complement = [prep] + gn['contenu']
     return {'contenu': complement, 'prep': prep, 'cod': gn}
 
+
 def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_negation=None, sujet=None, verbe=None, cod=None, adv=None, ccl=None):
     'Génère une phrase'
     phrase = []
-    if (structure is None and sujet is None
-        and verbe is None and cod is None
-        and adv is None and ccl is None):
+    pas_de_structure = all(var is None for var in (structure, sujet, verbe, cod,
+                                                   adv, ccl))
+    if pas_de_structure:
         structure_phrase = random.choice(structures_phrase)
     else:
         if structure is not None:
@@ -305,7 +322,7 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
                 contenu_min.add('adv')
             if ccl is not None:
                 contenu_min.add('ccl')
-            structures_possibles = [ s for s in structures_phrase if contenu_min.issubset(set(s))]
+            structures_possibles = [s for s in structures_phrase if contenu_min.issubset(set(s))]
             structure_phrase = random.choice(structures_possibles)
 
     transitif = 'vt' in structure_phrase
@@ -332,30 +349,29 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
         structure_phrase = nouvelle_structure
     if negatif is None and mot_negation is None:
         negatif = random.choice([False, True])
-    elif mot_negation is not None and negatif != False:
+    elif mot_negation is not None and negatif:
         negatif = True
     if negatif and mot_negation is None:
         mot_negation = random.choice(['pas', 'plus', 'jamais', 'presque plus', 'presque jamais'])
 
     if verbe is None:
-        verbe_infinitif = (random.choice([ v for v in verbes.keys() if v != 'être' and v != 'avoir']) if 'v' in structure_phrase
+        verbe_infinitif = (random.choice([v for v in verbes.keys() if v != 'être' and v != 'avoir']) if 'v' in structure_phrase
                            else random.choice(verbes_transitifs))
     else:
         verbe_infinitif = verbe
-        if not isinstance(verbe, dict) and not verbe in verbes:
+        if not isinstance(verbe, dict) and verbe not in verbes:
             print(f"""Ce programme ne connais pas le verbe {verbe}. \
 Il est possible de passer un dictionnaire en paramètre avec les champs \
 infinitif (str), groupe (int), radical (str), transitif (bool) et pronominal (bool) et aussi, \
 si le verbe est du troisième groupe, conjugaisons (list).""")
             return None
 
-
     if 'pp' in structure_phrase:
         nature_sujet = 'pp'
     else:
         nature_sujet = 'gn'
 
-    #Définition de la personne
+    # Définition de la personne
     if sujet is None:
         if nature_sujet == 'pp':
             sujet = random.choice(list(pronoms_personnels.keys()))
@@ -404,8 +420,9 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 else:
                     phrase.append("n'")
                 phrase.append(verbe)
-                if not question:
-                    phrase.append(mot_negation)
+                # if not question:
+                #     phrase.append(mot_negation)
+                phrase.append(mot_negation)
             else:
                 phrase.append(verbe)
         elif nature == 'adv':
@@ -442,11 +459,13 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             'adv': adv,
             'ccl': ccl}
 
+
 def finalise_phrase(phrase):
     if phrase[-1] == '?':
         return ' '.join(phrase).replace(' , ', ', ').replace("' ", "'").capitalize().replace(' - ', '-').replace(' -t- ', '-t-')
     else:
         return (' '.join(phrase).replace(' , ', ', ').replace("' ", "'") + '.').capitalize()
+
 
 phrases = []
 if __name__ == '__main__':

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Générateur de phrases en français</title>
+        <meta charset="utf-8" />
+        <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+    </head>
+    <body>
+        <h1>Générateur de phrases en français</h1>
+        <p>Cette page web génère des phrases en français, valides
+        grammaticalement bien qu'elles n'aient pas de sens.</p>
+        <p>C'est un programme open-source, le code est disponible
+        <a href="https://github.com/ewenak/texte">sur GitHub</a>.</p>
+        <p style="text-align: center" id="loading">Loading Pyodide (Python runtime)...</p>
+        <div id="ui" style="display: none">
+            <button id="regenerate">Regénérer les phrases</button>
+            <h2>Phrases générées</h2>
+            <div id="output"></div>
+        </div>
+
+        <script type="text/javascript">
+const loadingElement = document.querySelector('#loading');
+const ui = document.querySelector('#ui');
+const output = document.querySelector('#output');
+const regenerateButton = document.querySelector('#regenerate');
+
+let pyodide, code;
+
+function generateSentences() {
+    if (pyodide === undefined || code === undefined) {
+        return;
+    }
+    loadingElement.textContent = 'Generating...';
+    ui.style.display = 'none';
+    loadingElement.style.display = 'block';
+    pyodide.runPython(code);
+    let children = [];
+    let sentences = pyodide.globals.get('phrases');
+    for (let i = 0; i < sentences.length; i++) {
+        let element = document.createElement('p');
+        element.textContent = sentences.get(i);
+        children.push(element);
+    }
+    output.replaceChildren(...children);
+    loadingElement.style.display = 'none';
+    ui.style.display = 'block';
+}
+
+window.addEventListener('load', async () => {
+    regenerateButton.addEventListener('click', e => generateSentences());
+
+    pyodide = await loadPyodide();
+    loadingElement.textContent = 'Fetching code...';
+    let response = await fetch('texte.py');
+    if (!response.ok) {
+        alert("Couldn't fetch texte.py");
+        return;
+    }
+    code = await response.text();
+    loadingElement.remove()
+    loadingElement.style.display = 'block';
+    generateSentences();
+})
+        </script>
+    </body>
+</html>
+
