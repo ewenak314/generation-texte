@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
     <head>
         <title>Générateur de phrases en français</title>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
         <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
     </head>
     <body>
@@ -11,20 +12,29 @@
         grammaticalement bien qu'elles n'aient pas de sens.</p>
         <p>C'est un programme open-source, le code est disponible
         <a href="https://github.com/ewenak/texte">sur GitHub</a>.</p>
-        <p style="text-align: center" id="loading">Loading Pyodide (Python runtime)...</p>
+        <noscript>
+            Cette page web a besoin de JavaScript.
+        </noscript>
+        <p style="text-align: center; display: none" id="loading">Loading Pyodide (Python runtime)...</p>
         <div id="ui" style="display: none">
             <button id="regenerate">Regénérer les phrases</button>
+            <button id="pronounce">Prononcer les phrases</button>
+            <button id="cancelpronounciation" style="display: none">Arrêter de prononcer les phrases</button>
             <h2>Phrases générées</h2>
             <div id="output"></div>
         </div>
 
         <script type="text/javascript">
+'use strict';
+
 const loadingElement = document.querySelector('#loading');
 const ui = document.querySelector('#ui');
 const output = document.querySelector('#output');
 const regenerateButton = document.querySelector('#regenerate');
+const pronounceButton = document.querySelector('#pronounce');
+const cancelpronounciationButton = document.querySelector('#cancelpronounciation');
 
-let pyodide, code;
+let pyodide, code, sentences;
 
 function generateSentences() {
     if (pyodide === undefined || code === undefined) {
@@ -35,7 +45,7 @@ function generateSentences() {
     loadingElement.style.display = 'block';
     pyodide.runPython(code);
     let children = [];
-    let sentences = pyodide.globals.get('phrases');
+    sentences = pyodide.globals.get('phrases');
     for (let i = 0; i < sentences.length; i++) {
         let element = document.createElement('p');
         element.textContent = sentences.get(i);
@@ -48,7 +58,26 @@ function generateSentences() {
 
 window.addEventListener('load', async () => {
     regenerateButton.addEventListener('click', e => generateSentences());
+    pronounceButton.addEventListener('click', e => {
+        pronounceButton.style.display = 'none';
+        cancelpronounciationButton.style.display = 'block';
+        speechSynthesis.cancel();
+        let speech = new SpeechSynthesisUtterance(output.textContent);
+        speech.lang = 'fr';
+        speechSynthesis.speak(speech);
+        speech.addEventListener('end', e => {
+            pronounceButton.style.display = 'block';
+            cancelpronounciationButton.style.display = 'none';
+        });
+    });
+    cancelpronounciationButton.addEventListener('click', e => {
+        speechSynthesis.cancel();
+        pronounceButton.style.display = 'block';
+        cancelpronounciationButton.style.display = 'none';
+    });
 
+
+    loadingElement.style.display = 'block';
     pyodide = await loadPyodide();
     loadingElement.textContent = 'Fetching code...';
     let response = await fetch('texte.py');
@@ -60,7 +89,7 @@ window.addEventListener('load', async () => {
     loadingElement.remove()
     loadingElement.style.display = 'block';
     generateSentences();
-})
+});
         </script>
     </body>
 </html>
