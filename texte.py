@@ -19,6 +19,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+from dataclasses import dataclass
+from enum import Enum, auto
 import random
 import re
 
@@ -121,6 +123,27 @@ pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémo
 pluriel_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
 pluriel_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
 pluriel_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+
+
+class Genre(Enum):
+    FEMININE = auto()
+    MASCULINE = auto()
+
+
+class Number(Enum):
+    SINGULAR = auto()
+    PLURAL = auto()
+
+
+@dataclass
+class Word:
+    string: str
+
+
+@dataclass
+class Noun:
+    genre: Genre
+    number: Number
 
 
 class EmptyRootError(NameError):
