@@ -19,10 +19,153 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
+from __future__ import annotations    # allows `def func(self, arg: Class)` inside of Class
+
+import dataclasses
 from dataclasses import dataclass
 from enum import Enum, auto
 import random
 import re
+import typing
+
+
+VOWELS = 'aeiouyéèà'
+
+
+class Genre(Enum):
+    FEMININE = auto()
+    MASCULINE = auto()
+
+
+class Number(Enum):
+    SINGULAR = auto()
+    PLURAL = auto()
+
+
+@dataclass
+class Word:
+    string: str
+
+    def match_to_following_word(self, word: Word | str) -> str:
+        return f'{self.string} '
+
+
+class PluralMixin:
+    als_plurals_list = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
+                        'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
+    aux_plurals_list = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
+    eus_aus_plurals_list = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
+    oux_plurals_list = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+
+    @property
+    def als_plural(self):
+        return self.string in self.als_plurals_list
+
+    @property
+    def aux_plural(self):
+        return self.string in self.aux_plurals_list
+
+    @property
+    def eus_aus_plural(self):
+        return self.string in self.eus_aus_plurals_list
+
+    @property
+    def oux_plural(self):
+        return self.string in self.oux_plurals_list
+
+    def plural(self) -> Word:
+        '''This function takes a singular adjective or noun as input and returns it in plural'''
+        if self.string[-1] in 'szx':
+            plural_string = self.string
+        elif (self.string[-2:] in ['au', 'eu'] or self.oux_plural) and not self.eus_aus_plural:
+            plural_string = self.string + 'x'
+        elif self.string[-2:] == 'al' and not self.als_plural:
+            plural_string = self.string[:-2] + 'aux'
+        elif self.aux_plural:
+            plural_string = self.string[:-3] + 'aux'
+        else:
+            plural_string = self.string + 's'
+        return dataclasses.replace(self, string=plural_string, number=Number.PLURAL)
+
+
+@dataclass
+class Noun(Word, PluralMixin):
+    genre: Genre
+    number: Number
+
+
+@dataclass
+class Specifier(Word):
+    genre: Genre
+    number: Number
+
+    _modified_before_vowels_list = {
+        'le': "l'", 'la': "l'", 'ma': 'mon ', 'sa': 'son ', 'ta': 'ton ', 'ce': 'cet ',
+    }
+
+    def match_to_following_word(self, word: Word | str) -> str:
+        if isinstance(word, Word):
+            word = word.string
+        if word[0] in VOWELS and self.string in self._modified_before_vowels_list:
+            return self._modified_before_vowels_list[self.string]
+        return super().match_to_following_word(word)
+
+
+@dataclass
+class Adjective(Word, PluralMixin):
+    genre: Genre
+    number: Number
+
+    _modified_before_vowels_list: typing.ClassVar = {'beau': 'bel ', 'nouveau': 'nouvel ', 'vieux': 'vieil '}
+    _before_noun_list: typing.ClassVar = ['beau', 'grand', 'belle', 'grande']
+
+    @property
+    def before_noun(self):
+        return self.string in self._before_noun_list
+
+    def match_to_following_word(self, word: Word | str) -> str:
+        if isinstance(word, Word):
+            word = word.string
+        if word[0] in VOWELS and word in self._modified_before_vowels_list:
+            return self._modified_before_vowels_list[word]
+        return super().match_to_following_word(word)
+
+
+@dataclass
+class WordGroup:
+    words: list[Word]
+
+    def __str__(self):
+        word_string = []
+        prev_word = self.words[0]
+        for word in self.words:
+            word_string.append(word.match_to_following_word(prev_word))
+            prev_word = word
+        return ''.join(word_string)
+
+
+@dataclass
+class NounGroup(WordGroup):
+    number: Number = None
+    genre: Genre = None
+
+    def __post_init__(self):
+        self.specifier = None
+        self.noun = None
+        self.adjectives = []
+        for w in self.words:
+            if isinstance(w, Specifier):
+                self.specifier = w
+            elif isinstance(w, Noun):
+                self.noun = w
+            elif isinstance(w, Adjective):
+                self.adjectives.append(w)
+
+        if self.number is None:
+            self.number = self.noun.number
+        if self.genre is None:
+            self.genre = self.noun.genre
+
 
 # Données
 
@@ -62,7 +205,9 @@ conjugaisons = {
     'participe': {
         'passe': {
             1: 'é',
-            2: 'i'}}
+            2: 'i',
+        },
+    }
 }
 
 temps_implementes = {'present': "Présent de l'indicatif",
@@ -94,146 +239,72 @@ conjug_3e = {'boire': {'indicatif': {'present': ['bois', 'bois', 'boit', 'buvons
                                      'imparfait': ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient']},
                        'participe': {'passe': 'eu'}}}
 
-noms = {'m': ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
-              'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
-        'f': ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'discussion', 'éternité',
-              'bonté']}
-adjectifs = {'m': ['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme',
-                   'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
-             'f': ['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente',
-                   'énorme', 'schtroumpf', 'sage', 'embêtante', 'faible', 'fainéante', 'grossière']}
-adjectifs_devant_nom = ['beau', 'grand', 'belle', 'grande']
-adj_changeant_radical_voyelles = {'beau': 'bel', 'nouveau': 'nouvel', 'vieux': 'vieil'}
+noms = {
+    Genre.FEMININE: ['nourriture', 'couverture', 'arrivée', 'tente', 'voiture', 'nature', 'discussion', 'éternité',
+                     'bonté'],
+    Genre.MASCULINE: ['papier', 'ordinateur', 'mot', 'casse-croûte', 'véhicule', 'métier', 'verre', 'bois', 'boa', 'schtroumpf',
+                      'remède', 'zéro', 'masseur', 'lit', 'pneu', 'jeu'],
+}
+
+adjectifs = {
+    Genre.FEMININE: ['noire', 'bleue', 'belle', 'rigolote', 'bizarre', 'bretonne', 'lumineuse', 'grande', 'transparente',
+                     'énorme', 'schtroumpf', 'sage', 'embêtante', 'faible', 'fainéante', 'grossière'],
+    Genre.MASCULINE: ['noir', 'bleu', 'beau', 'rigolo', 'bizarre', 'breton', 'lumineux', 'grand', 'transparent', 'énorme',
+                      'schtroumpf', 'sage', 'embêtant', 'faible', 'fainéant', 'grossier'],
+}
 pronoms_personnels = {'je': 0, 'tu': 1, 'il': 2, 'elle': 2, 'nous': 3, 'vous': 4, 'ils': 5, 'elles': 5}
 pronoms_personnels_reflechis = ['me', 'te', 'se', 'nous', 'vous', 'se']
-determinants = {'m': ['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur', 'quelque'],
-                'f': ['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur', 'quelque'],
-                'pl': ['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs', 'quelques']}
+determinants = {Genre.MASCULINE: ['le', 'un', 'mon', 'ce', 'notre', 'votre', 'son', 'ton', 'leur', 'quelque'],
+                Genre.FEMININE: ['la', 'une', 'ma', 'cette', 'notre', 'votre', 'sa', 'ta', 'leur', 'quelque'],
+                Number.PLURAL: ['les', 'des', 'mes', 'ces', 'nos', 'vos', 'ses', 'tes', 'leurs', 'quelques']}
 adverbes = ['rapidement', 'bien', 'bruyamment', 'calmement', 'sans effort', 'schtroumpfement', 'jeunement',
             'perpétuellement', 'fatalement', 'épisodiquement', 'farouchement', 'intégralement',
             'individuellement', 'anticonstitutionnellement']
 prepositions_lieu = ['à', 'sur', 'dans']
-voyelles = 'aeiouyéèà'
 structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'adv'],
                      ['adv', ',', 'sgn', 'v'], ['pp', 'v'], ['pp', 'v', 'adv'], ['pp', 'vt', 'cod', 'adv'],
                      ['adv', ',', 'pp', 'vt', 'cod'], ['sgn', 'vt', 'cod', 'ccl'], ['pp', 'vt', 'cod', 'adv', 'ccl'],
                      ['adv', ',', 'sgn', 'vt', 'cod', 'ccl']]
-pluriel_en_als = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
-                  'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
-pluriel_en_aux = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
-pluriel_en_eus_aus = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
-pluriel_en_oux = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
-
-
-class Genre(Enum):
-    FEMININE = auto()
-    MASCULINE = auto()
-
-
-class Number(Enum):
-    SINGULAR = auto()
-    PLURAL = auto()
-
-
-@dataclass
-class Word:
-    string: str
-
-
-@dataclass
-class Noun:
-    genre: Genre
-    number: Number
 
 
 class EmptyRootError(NameError):
     pass
 
 
-def pluriel(mot):
-    '''La fonction pluriel prend en paramètre
-    un adjectif ou un nom et le renvoie au pluriel'''
-    if mot[-1] in 'szx':
-        return mot
-    elif (mot[-2:] in ['au', 'eu'] or mot in pluriel_en_oux) and (mot not in pluriel_en_eus_aus):
-        return mot + 'x'
-    elif mot[-2:] == 'al' and mot not in pluriel_en_als:
-        return mot[:-2] + 'aux'
-    elif mot in pluriel_en_aux:
-        return mot[:-3] + 'aux'
-    else:
-        return mot + 's'
-
-
-pluriels = dict(
-    [
-        (m, pluriel(m)) for m in (
-            noms['m'] + noms['f'] + adjectifs['m'] + adjectifs['f']
-        ) if pluriel(m) != m
-    ] + [
-        (determinants['m'][i], determinants['pl'][i])
-        for i in range(0, len(determinants['m']))
-    ]
-)
-
-
-def groupe_nominal(det=None, nom=None, adj=None, genre=None, nombre=None):
-    '''Renvoie un groupe nominal (gn) dont
-    on peut spécifier certaines choses'''
+def noun_group(specifier=None, noun=None, adj=None, genre=None, number=None):
+    '''Renvoie un groupe nominal (gn) dont on peut spécifier certaines choses'''
     gn = []
-    # Genre
+    # Genre detection
     if genre is None:
-        if det is not None and det not in determinants['pl']:
-            genre = 'm' if det in determinants['m'] else 'f'
-        elif nom is not None:
-            if nom in noms['m'] or nom in [pluriel(n) for n in noms['m']]:
-                genre = 'm'
-            else:
-                genre = 'f'
-        elif adj is not None:
-            if adj in adjectifs['m'] or adj in [pluriel(m) for m in adjectifs['m']]:
-                genre = 'm'
-            else:
-                genre = 'f'
-        else:
-            genre = random.choice(['m', 'f'])
+        genre = next((w.genre for w in [specifier, noun, adj] if w is not None), None)
+        if genre is None:
+            genre = random.choice(list(Genre))
 
-    if nombre is None:
-        if det is None and adj is None and nom is None:
-            nombre = random.choice(['s', 'p'])
-        else:
-            nombre = 's' if not (det in pluriels.values() or nom in pluriels.values() or adj in pluriels.values()) else 'p'
-    if det is None:
-        det = random.choice(determinants[genre]) if nombre == 's' else random.choice(determinants['pl'])
+    if number is None:
+        number = next((w.number for w in [specifier, noun, adj] if w is not None), None)
+        if number is None:
+            number = random.choice(list(Number))
+
+    if specifier is None:
+        specifier = Specifier(
+            random.choice(determinants[genre]) if number == Number.SINGULAR else random.choice(determinants[number]),
+            genre=genre, number=number)
     if adj is None:
-        adj = random.choice(adjectifs[genre])
-    if nom is None:
-        nom = random.choice(noms[genre])
+        adj = Adjective(random.choice(adjectifs[genre]), genre=genre, number=number)
+    if noun is None:
+        noun = Noun(random.choice(noms[genre]), genre=genre, number=number)
 
-    adj_devant_nom = adj in adjectifs_devant_nom
-    if adj in adj_changeant_radical_voyelles and nom[0] in voyelles and genre == 'm' and nombre == 's':
-        adj = adj_changeant_radical_voyelles[adj]
+    # Plural
+    if number == Number.PLURAL:
+        adj = adj.plural()
+        noun = noun.plural()
 
-    # Pluriel
-    if nombre == 'p':
-        adj = pluriel(adj)
-        nom = pluriel(nom)
-
-    if adj_devant_nom:
-        gn = [det, adj, nom]
+    if adj.before_noun:
+        words = [specifier, adj, noun]
     else:
-        gn = [det, nom, adj]
+        words = [specifier, noun, adj]
 
-    # Correction de l'orthographe du déterminant en fonction du mot qu'il y a après
-    if gn[1][0] in voyelles:
-        if det in ('le', 'la'):
-            gn[0] = "l'"
-        elif det in ('ma', 'sa', 'ta'):
-            gn[0] = det[:-1] + 'on'
-        elif det == 'ce':
-            gn[0] = 'cet'
-
-    return {'contenu': gn, 'nombre': nombre, 'genre': genre, 'det': det, 'nom': nom, 'adj': adj}
+    return NounGroup(words=words)
 
 
 def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
@@ -291,7 +362,7 @@ def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
                 verbe_conjugue = radical + terminaison
     if ajouter_pronoms:
         if cara_verbe['pronominal']:
-            if not verbe_conjugue[0] in voyelles or not pronoms_personnels_reflechis[personne][-1] in voyelles:
+            if not verbe_conjugue[0] in VOWELS or not pronoms_personnels_reflechis[personne][-1] in VOWELS:
                 verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
             else:
                 verbe_conjugue = pronoms_personnels_reflechis[personne][:-1] + "'" + verbe_conjugue
@@ -303,7 +374,7 @@ def complement_lieu(prep=None, gn=None):
     if prep is None:
         prep = random.choice(prepositions_lieu)
     if gn is None:
-        gn = groupe_nominal()
+        gn = noun_group()
     if prep == 'à':
         if gn['contenu'][0] == 'le':
             prep = 'au'
@@ -400,7 +471,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             sujet = random.choice(list(pronoms_personnels.keys()))
             personne = pronoms_personnels[sujet]
         else:
-            sujet = groupe_nominal()
+            sujet = noun_group()
             if sujet['nombre'] == 's':
                 personne = 2
             else:
@@ -419,7 +490,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
     for nature in structure_phrase:
         if nature == 'pp':
             pp = sujet
-            if pp == 'je' and verbe[0] in voyelles and not negatif:
+            if pp == 'je' and verbe[0] in VOWELS and not negatif:
                 pp = "j'"
             phrase.append(pp)
             if question and negatif:
@@ -430,7 +501,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 phrase.append(m)
         elif nature == 'cod':
             if cod is None:
-                gn = groupe_nominal()
+                gn = noun_group()
                 cod = gn
             else:
                 gn = cod
@@ -438,7 +509,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 phrase.append(m)
         elif nature == 'v' or nature == 'vt':
             if negatif:
-                if not verbe[0] in voyelles:
+                if not verbe[0] in VOWELS:
                     phrase.append('ne')
                 else:
                     phrase.append("n'")
@@ -460,7 +531,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
         elif nature == '?':
             phrase.append('?')
         elif nature == '-':
-            if sujet[0] in voyelles:
+            if sujet[0] in VOWELS:
                 if conjugaison(verbe_infinitif, personne, temps)[-1] in 'dt':
                     phrase.append('-')
                 else:
