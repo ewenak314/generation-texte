@@ -1,1 +1,3 @@
-__pycache__/texte.cpython-310.pyc
+*.pyc
+*.swp
+*~
