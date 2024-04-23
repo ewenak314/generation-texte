@@ -42,6 +42,12 @@ class Number(Enum):
     PLURAL = auto()
 
 
+class Person(Enum):
+    FIRST_PERSON = 1
+    SECOND_PERSON = 2
+    THIRD_PERSON = 3
+
+
 @dataclass
 class Word:
     string: str
@@ -143,6 +149,12 @@ class Adjective(Word, PluralMixin):
 
 
 @dataclass
+class Verb(Word):
+    person: Person
+    number: Number
+
+
+@dataclass
 class WordGroup:
     words: list[Word]
 
@@ -159,24 +171,56 @@ class WordGroup:
 class NounGroup(WordGroup):
     number: Number = None
     genre: Genre = None
+    specifier: Specifier = None
+    noun: Noun = None
+    adjectives: list[Adjective] = None
 
-    def __post_init__(self):
-        self.specifier = None
-        self.noun = None
-        self.adjectives = []
-        for w in self.words:
-            if isinstance(w, Specifier):
-                self.specifier = w
-            elif isinstance(w, Noun):
-                self.noun = w
-            elif isinstance(w, Adjective):
-                self.adjectives.append(w)
+    def __init__(self, number=None, genre=None, specifier=None, noun=None,
+                 adjectives=None):
+        if adjectives is None:
+            adjectives = []
+        # Genre detection
+        if genre is None:
+            genre = next((
+                w.genre for w in [specifier, noun, *adjectives]
+                if w is not None
+            ), None)
+            if genre is None:
+                genre = random.choice(list(Genre))
 
-        if self.number is None:
-            self.number = self.noun.number
-        if self.genre is None:
-            self.genre = self.noun.genre
+        if number is None:
+            number = next((
+                w.number for w in [specifier, noun, *adjectives]
+                if w is not None
+            ), None)
+            if number is None:
+                number = random.choice(list(Number))
 
+        if specifier is None:
+            self.specifier = Specifier(
+                random.choice(
+                    determinants[genre]) if number == Number.SINGULAR
+                    else random.choice(determinants[number]
+                ),
+                genre=genre, number=number)
+        if not adjectives:
+            self.adjectives = [Adjective(random.choice(adjectifs[genre]),
+                                         genre=genre, number=number)]
+        else:
+            self.adjectives = adjectives
+        if noun is None:
+            self.noun = Noun(random.choice(noms[genre]), genre=genre,
+                             number=number)
+
+        if number == Number.PLURAL:
+            self.adjectives = [adj.plural() for adj in adjectives]
+            self.noun = self.noun.plural()
+
+        self.words = [
+            self.specifier,
+            *(adj for adj in self.adjectives if adj.before_noun),
+            self.noun,
+            *(adj for adj in self.adjectives if not adj.before_noun)]
 
 # Données
 
@@ -389,7 +433,7 @@ def complement_lieu(prep=None, gn=None):
             prep = 'aux'
             gn['det'] = ''
             gn['contenu'][0] = ''
-    complement = [prep] + gn['contenu']
+    complement = [prep] + gn.words
     return {'contenu': complement, 'prep': prep, 'cod': gn}
 
 
