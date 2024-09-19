@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Génération de texte
 # Copyright (C) 2019 Ewenak@github
@@ -19,7 +18,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 
-from __future__ import annotations    # allows `def func(self, arg: Class)` inside of Class
+# allows `def func(self, arg: Class)` inside of Class
+from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass
@@ -51,11 +51,15 @@ class Word:
 
 
 class PluralMixin:
-    als_plurals_list = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval', 'cérémonial', 'choral', 'étal', 'fatal', 'festival',
-                        'natal', 'naval', 'récital', 'régal', 'tonal', 'pal', 'val', 'virginal']
-    aux_plurals_list = ['bail', 'corail', 'émail', 'gemmail', 'soupirail', 'travail', 'vantail', 'vitrail']
+    als_plurals_list = ['aval', 'bal', 'banal', 'bancal', 'cal', 'carnaval',
+                        'cérémonial', 'choral', 'étal', 'fatal', 'festival',
+                        'natal', 'naval', 'récital', 'régal', 'tonal', 'pal',
+                        'val', 'virginal']
+    aux_plurals_list = ['bail', 'corail', 'émail', 'gemmail', 'soupirail',
+                        'travail', 'vantail', 'vitrail']
     eus_aus_plurals_list = ['bleu', 'émeu', 'landau', 'lieu', 'pneu', 'sarrau']
-    oux_plurals_list = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou', 'pou']
+    oux_plurals_list = ['bijou', 'caillou', 'chou', 'genou', 'hibou', 'joujou',
+                        'pou']
 
     @property
     def als_plural(self):
@@ -74,10 +78,12 @@ class PluralMixin:
         return self.string in self.oux_plurals_list
 
     def plural(self) -> Word:
-        '''This function takes a singular adjective or noun as input and returns it in plural'''
+        '''This function takes a singular adjective or noun as input and
+        returns it in plural'''
         if self.string[-1] in 'szx':
             plural_string = self.string
-        elif (self.string[-2:] in ['au', 'eu'] or self.oux_plural) and not self.eus_aus_plural:
+        elif ((self.string[-2:] in ['au', 'eu'] or self.oux_plural)
+              and not self.eus_aus_plural):
             plural_string = self.string + 'x'
         elif self.string[-2:] == 'al' and not self.als_plural:
             plural_string = self.string[:-2] + 'aux'
@@ -85,7 +91,8 @@ class PluralMixin:
             plural_string = self.string[:-3] + 'aux'
         else:
             plural_string = self.string + 's'
-        return dataclasses.replace(self, string=plural_string, number=Number.PLURAL)
+        return dataclasses.replace(self, string=plural_string,
+                                   number=Number.PLURAL)
 
 
 @dataclass
@@ -100,13 +107,15 @@ class Specifier(Word):
     number: Number
 
     _modified_before_vowels_list = {
-        'le': "l'", 'la': "l'", 'ma': 'mon ', 'sa': 'son ', 'ta': 'ton ', 'ce': 'cet ',
+        'le': "l'", 'la': "l'", 'ma': 'mon ', 'sa': 'son ', 'ta': 'ton ',
+        'ce': 'cet ',
     }
 
     def match_to_following_word(self, word: Word | str) -> str:
         if isinstance(word, Word):
             word = word.string
-        if word[0] in VOWELS and self.string in self._modified_before_vowels_list:
+        if (word[0] in VOWELS
+            and self.string in self._modified_before_vowels_list):
             return self._modified_before_vowels_list[self.string]
         return super().match_to_following_word(word)
 
@@ -116,7 +125,9 @@ class Adjective(Word, PluralMixin):
     genre: Genre
     number: Number
 
-    _modified_before_vowels_list: typing.ClassVar = {'beau': 'bel ', 'nouveau': 'nouvel ', 'vieux': 'vieil '}
+    _modified_before_vowels_list: typing.ClassVar = {
+        'beau': 'bel ', 'nouveau': 'nouvel ', 'vieux': 'vieil '
+    }
     _before_noun_list: typing.ClassVar = ['beau', 'grand', 'belle', 'grande']
 
     @property
@@ -273,7 +284,6 @@ class EmptyRootError(NameError):
 
 def noun_group(specifier=None, noun=None, adj=None, genre=None, number=None):
     '''Renvoie un groupe nominal (gn) dont on peut spécifier certaines choses'''
-    gn = []
     # Genre detection
     if genre is None:
         genre = next((w.genre for w in [specifier, noun, adj] if w is not None), None)
@@ -307,7 +317,8 @@ def noun_group(specifier=None, noun=None, adj=None, genre=None, number=None):
     return NounGroup(words=words)
 
 
-def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
+def conjugaison(verbe, personne=None, temps='present', *,
+                ajouter_pronoms=True):
     '''Conjugue le verbe passé en paramètre
     au temps et à la personne voulus'''
     if personne is None and temps != 'participe_passe':
@@ -315,20 +326,16 @@ def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
     verbe_conjugue = []
     if isinstance(verbe, dict):
         cara_verbe = verbe
+    elif verbe in verbes:
+        cara_verbe = verbes[verbe]
     else:
-        if verbe in verbes:
-            cara_verbe = verbes[verbe]
+        m = re.search(r'(.+)([ei]r)$', verbe)
+        if m is not None:
+            radical, terminaison = m.groups()
+            groupe = 1 if terminaison == 'er' else 2
         else:
-            m = re.search(r'(.+)([ei]r)$', verbe)
-            if m is not None:
-                radical, terminaison = m.groups()
-                if terminaison == 'er':
-                    groupe = 1
-                else:
-                    groupe = 2
-            else:
-                return verbe
-            cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
+            return verbe
+        cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
     if groupe == 3:
@@ -342,27 +349,25 @@ def conjugaison(verbe, personne=None, temps='present', ajouter_pronoms=True):
                 verbe_conjugue = conjugaison('être' if verbe['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, 0, temps='participe_passe', ajouter_pronoms=False)
             else:
                 verbe_conjugue = conjugaison('être' if verbes[verbe]['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, 0, temps='participe_passe', ajouter_pronoms=False)
+        elif isinstance(verbe, dict):
+            verbe_conjugue = verbe['conjugaisons']['indicatif'][temps][personne]
         else:
-            if isinstance(verbe, dict):
-                verbe_conjugue = verbe['conjugaisons']['indicatif'][temps][personne]
-            else:
-                verbe_conjugue = conjug_3e[verbe]['indicatif'][temps][personne]
+            verbe_conjugue = conjug_3e[verbe]['indicatif'][temps][personne]
+    elif temps == 'participe_passe':
+        return radical + conjugaisons['participe']['passe'][groupe]
+    elif temps == 'passe_compose':
+        verbe_conjugue = conjugaison('être' if verbes[verbe]['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, temps='participe_passe', ajouter_pronoms=False)
     else:
-        if temps == 'participe_passe':
-            return radical + conjugaisons['participe']['passe'][groupe]
-        elif temps == 'passe_compose':
-            verbe_conjugue = conjugaison('être' if verbes[verbe]['pronominal'] else 'avoir', personne) + ' ' + conjugaison(verbe, temps='participe_passe', ajouter_pronoms=False)
-        else:
-            terminaison = conjugaisons['indicatif'][temps][groupe][personne]
-            if radical == '':
-                raise EmptyRootError(verbe)
-            if groupe == 1:
-                verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
-            elif groupe == 2:
-                verbe_conjugue = radical + terminaison
+        terminaison = conjugaisons['indicatif'][temps][groupe][personne]
+        if radical == '':
+            raise EmptyRootError(verbe)
+        if groupe == 1:
+            verbe_conjugue = radical + ('e' if (terminaison[0] in ['a', 'o', 'u'] and radical[-1] == 'g') else '') + terminaison
+        elif groupe == 2:
+            verbe_conjugue = radical + terminaison
     if ajouter_pronoms:
         if cara_verbe['pronominal']:
-            if not verbe_conjugue[0] in VOWELS or not pronoms_personnels_reflechis[personne][-1] in VOWELS:
+            if verbe_conjugue[0] not in VOWELS or pronoms_personnels_reflechis[personne][-1] not in VOWELS:
                 verbe_conjugue = pronoms_personnels_reflechis[personne] + ' ' + verbe_conjugue
             else:
                 verbe_conjugue = pronoms_personnels_reflechis[personne][:-1] + "'" + verbe_conjugue
@@ -395,29 +400,28 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
                                                    adv, ccl))
     if pas_de_structure:
         structure_phrase = random.choice(structures_phrase)
+    elif structure is not None:
+        structure_phrase = structure
     else:
-        if structure is not None:
-            structure_phrase = structure
-        else:
-            contenu_min = set()
-            if sujet is not None:
-                if isinstance(sujet, str):
-                    contenu_min.add('pp')
-                else:
-                    contenu_min.add('sgn')
-            if verbe is not None:
-                if verbe in verbes_transitifs:
-                    contenu_min.add('vt')
-                else:
-                    contenu_min.add('v')
-            if cod is not None:
-                contenu_min.add('cod')
-            if adv is not None:
-                contenu_min.add('adv')
-            if ccl is not None:
-                contenu_min.add('ccl')
-            structures_possibles = [s for s in structures_phrase if contenu_min.issubset(set(s))]
-            structure_phrase = random.choice(structures_possibles)
+        contenu_min = set()
+        if sujet is not None:
+            if isinstance(sujet, str):
+                contenu_min.add('pp')
+            else:
+                contenu_min.add('sgn')
+        if verbe is not None:
+            if verbe in verbes_transitifs:
+                contenu_min.add('vt')
+            else:
+                contenu_min.add('v')
+        if cod is not None:
+            contenu_min.add('cod')
+        if adv is not None:
+            contenu_min.add('adv')
+        if ccl is not None:
+            contenu_min.add('ccl')
+        structures_possibles = [s for s in structures_phrase if contenu_min.issubset(set(s))]
+        structure_phrase = random.choice(structures_possibles)
 
     transitif = 'vt' in structure_phrase
 
@@ -431,11 +435,10 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
                 nouvelle_structure = ['vt', '-', 'pp']
             else:
                 nouvelle_structure = ['v', '-', 'pp']
+        elif transitif:
+            nouvelle_structure = ['Est-ce que', 'sgn', 'vt']
         else:
-            if transitif:
-                nouvelle_structure = ['Est-ce que', 'sgn', 'vt']
-            else:
-                nouvelle_structure = ['Est-ce que', 'sgn', 'v']
+            nouvelle_structure = ['Est-ce que', 'sgn', 'v']
         for c in ['cod', 'adv', 'ccl']:
             if c in structure_phrase:
                 nouvelle_structure.append(c)
@@ -449,7 +452,7 @@ def genere_phrase(structure=None, temps=None, question=None, negatif=None, mot_n
         mot_negation = random.choice(['pas', 'plus', 'jamais', 'presque plus', 'presque jamais'])
 
     if verbe is None:
-        verbe_infinitif = (random.choice([v for v in verbes.keys() if v != 'être' and v != 'avoir']) if 'v' in structure_phrase
+        verbe_infinitif = (random.choice([v for v in verbes if v not in ('être', 'avoir')]) if 'v' in structure_phrase
                            else random.choice(verbes_transitifs))
     else:
         verbe_infinitif = verbe
@@ -460,10 +463,7 @@ infinitif (str), groupe (int), radical (str), transitif (bool) et pronominal (bo
 si le verbe est du troisième groupe, conjugaisons (list).""")
             return None
 
-    if 'pp' in structure_phrase:
-        nature_sujet = 'pp'
-    else:
-        nature_sujet = 'gn'
+    nature_sujet = 'pp' if 'pp' in structures_phrase else 'gn'
 
     # Définition de la personne
     if sujet is None:
@@ -472,18 +472,11 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             personne = pronoms_personnels[sujet]
         else:
             sujet = noun_group()
-            if sujet['nombre'] == 's':
-                personne = 2
-            else:
-                personne = 5
+            personne = 2 if sujet['nombre'] == 's' else 5
+    elif isinstance(sujet, str):
+        personne = pronoms_personnels[sujet]
     else:
-        if isinstance(sujet, str):
-            personne = pronoms_personnels[sujet]
-        else:
-            if sujet['nombre'] == 's':
-                personne = 2
-            else:
-                personne = 5
+        personne = 2 if sujet['nombre'] == 's' else 5
 
     verbe = conjugaison(verbe_infinitif, personne, temps)
 
@@ -497,19 +490,17 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
                 phrase.append(mot_negation)
         elif nature == 'sgn':
             gn = sujet
-            for m in gn['contenu']:
-                phrase.append(m)
+            phrase.extend(gn['contenu'])
         elif nature == 'cod':
             if cod is None:
                 gn = noun_group()
                 cod = gn
             else:
                 gn = cod
-            for m in gn['contenu']:
-                phrase.append(m)
-        elif nature == 'v' or nature == 'vt':
+            phrase.extend(gn['contenu'])
+        elif nature in ('v', 'vt'):
             if negatif:
-                if not verbe[0] in VOWELS:
+                if verbe[0] not in VOWELS:
                     phrase.append('ne')
                 else:
                     phrase.append("n'")
@@ -524,8 +515,7 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             phrase.append(adv)
         elif nature == 'ccl':
             ccl = complement_lieu() if ccl is None else ccl
-            for m in ccl['contenu']:
-                phrase.append(m)
+            phrase.extend(ccl['contenu'])
         elif nature == ',':
             phrase.append(',')
         elif nature == '?':
@@ -563,7 +553,7 @@ def finalise_phrase(phrase):
 
 phrases = []
 if __name__ == '__main__':
-    for x in range(0, 100):
+    for _ in range(0, 100):
         phrase = genere_phrase()['contenu']
         phrases.append(finalise_phrase(phrase))
         print(phrases[-1])
