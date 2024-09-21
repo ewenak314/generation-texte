@@ -198,7 +198,7 @@ class VerbalBase:
                 "{self}: self.group = 3 but self.conjugations is None")
         if self.auxiliary is None:
             if self.infinitive in ('avoir', 'être'):
-                if not self.infinitive in self._auxiliaries:
+                if self.infinitive not in self._auxiliaries:
                     self._auxiliaries[self.infinitive] = self
                 self.auxiliary = self._auxiliaries['avoir']
             elif self.reflexive:
@@ -206,7 +206,8 @@ class VerbalBase:
             else:
                 self.auxiliary = self._auxiliaries['avoir']
 
-    def conjugate(self, tense: Tense, person: Person | None, number: Number = Number.SINGULAR):
+    def conjugate(self, tense: Tense, person: Person | None,
+                  number: Number = Number.SINGULAR):
         # TODO: reflexive verbs
         if tense in (Tense.INFINITIVE, Tense.PAST_PARTICIPLE):
             person_key = None
@@ -218,13 +219,15 @@ class VerbalBase:
         if tense == Tense.INFINITIVE:
             return self.infinitive
         elif tense == Tense.INDICATIVE_COMPOUND_PAST:
-            aux = self.auxiliary.conjugate(Tense.INDICATIVE_PRESENT, person, number)
+            aux = self.auxiliary.conjugate(
+                Tense.INDICATIVE_PRESENT, person, number)
             participle = self.conjugate(Tense.PAST_PARTICIPLE, None)
             return f'{aux} {participle}'
         elif self.group == 3:
             return self.conjugations[tense][person_key]
         else:
-            return f'{self.root}{self._regular_conjugations[tense][self.group][person_key]}'
+            ending = self._regular_conjugations[tense][self.group][person_key]
+            return f'{self.root}{ending}'
 
 avoir_base = VerbalBase(
     'avoir',
@@ -234,7 +237,8 @@ avoir_base = VerbalBase(
     reflexive=False,
     conjugations={
         Tense.INDICATIVE_PRESENT: ['ai', 'as', 'a', 'avons', 'avez', 'ont'],
-        Tense.INDICATIVE_IMPERFECT: ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'],
+        Tense.INDICATIVE_IMPERFECT: [
+            'avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'],
         Tense.PAST_PARTICIPLE: {None: 'eu'},
     },
 )
@@ -245,8 +249,10 @@ etre_base = VerbalBase(
     transitive=True,
     reflexive=False,
     conjugations={
-        Tense.INDICATIVE_PRESENT: ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
-        Tense.INDICATIVE_IMPERFECT: ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient'],
+        Tense.INDICATIVE_PRESENT: [
+            'suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
+        Tense.INDICATIVE_IMPERFECT: [
+            'étais', 'étais', 'était', 'étions', 'étiez', 'étaient'],
         Tense.PAST_PARTICIPLE: {None: 'été'},
     },
 )
@@ -419,6 +425,14 @@ class EmptyRootError(NameError):
     pass
 
 
+def convert_conjugations(conjugations):
+    return {
+        Tense.INDICATIVE_PRESENT: conjugations['indicatif']['present'],
+        Tense.INDICATIVE_IMPERFECT: conjugations['indicatif']['imparfait'],
+        Tense.PAST_PARTICIPLE: {None: conjugations['participe']['passe']},
+    }
+
+
 def conjugaison(verbe, personne=None, temps='present', *,
                 ajouter_pronoms=True):
     '''Conjugue le verbe passé en paramètre
@@ -440,6 +454,35 @@ def conjugaison(verbe, personne=None, temps='present', *,
         cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
+    if groupe != 3:
+        conjugations = None
+    elif isinstance(verbe, dict) and 'conjugaisons' in verbe:
+        conjugations = convert_conjugations(verbe)
+    elif verbe in conjug_3e:
+        conjugations = convert_conjugations(conjug_3e[verbe])
+    tense = {
+        'present': Tense.INDICATIVE_PRESENT,
+        'imparfait': Tense.INDICATIVE_IMPERFECT,
+        'passe_compose': Tense.INDICATIVE_COMPOUND_PAST,
+    }[temps]
+    if isinstance(personne, Person):
+        number = Number.SINGULAR
+        person = personne
+    elif personne >= 3:
+        number = Number.PLURAL
+        person = Person(personne - 3)
+    else:
+        number = Number.SINGULAR
+        person = Person(personne)
+
+    base = VerbalBase(
+        verbe if not isinstance(verbe, dict) else (
+            radical + 'ir' if groupe == 2 else radical + 'er'),
+        group=groupe, root=radical, transitive=cara_verbe['transitif'],
+        reflexive=cara_verbe['pronominal'], conjugations=conjugations
+    )
+    return base.conjugate(tense, person, number)
+
     if groupe == 3:
         if temps == 'participe_passe':
             if isinstance(verbe, dict):
