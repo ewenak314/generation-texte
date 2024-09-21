@@ -304,6 +304,8 @@ class NounGroup(WordGroup):
             ), None)
             if genre is None:
                 genre = random.choice(list(Genre))
+        else:
+            self.genre = genre
 
         if number is None:
             number = next((
@@ -312,6 +314,8 @@ class NounGroup(WordGroup):
             ), None)
             if number is None:
                 number = random.choice(list(Number))
+        else:
+            self.number = number
 
         if specifier is None:
             self.specifier = Specifier(
@@ -320,14 +324,20 @@ class NounGroup(WordGroup):
                     else random.choice(determinants[number]
                 ),
                 genre=genre, number=number)
+        else:
+            self.specifier = specifier
+
         if not adjectives:
             self.adjectives = [Adjective(random.choice(adjectifs[genre]),
                                          genre=genre, number=number)]
         else:
             self.adjectives = adjectives
+
         if noun is None:
             self.noun = Noun(random.choice(noms[genre]), genre=genre,
                              number=number)
+        else:
+            self.noun = noun
 
         if number == Number.PLURAL:
             self.adjectives = [adj.plural() for adj in adjectives]
@@ -451,7 +461,8 @@ def conjugaison(verbe, personne=None, temps='present', *,
             groupe = 1 if terminaison == 'er' else 2
         else:
             return verbe
-        cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False, 'pronominal': False}
+        cara_verbe = {'groupe': groupe, 'radical': radical, 'transitif': False,
+                      'pronominal': False}
     radical = cara_verbe['radical']
     groupe = cara_verbe['groupe']
     if groupe != 3:
