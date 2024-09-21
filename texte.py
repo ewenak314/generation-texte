@@ -43,9 +43,17 @@ class Number(Enum):
 
 
 class Person(Enum):
-    FIRST_PERSON = 1
-    SECOND_PERSON = 2
-    THIRD_PERSON = 3
+    FIRST_PERSON = 0
+    SECOND_PERSON = 1
+    THIRD_PERSON = 2
+
+
+class Tense(Enum):
+    INFINITIVE = auto()
+    PAST_PARTICIPLE = auto()
+    INDICATIVE_PRESENT = auto()
+    INDICATIVE_COMPOUND_PAST = auto()
+    INDICATIVE_IMPERFECT = auto()
 
 
 @dataclass
@@ -149,9 +157,112 @@ class Adjective(Word, PluralMixin):
 
 
 @dataclass
-class Verb(Word):
-    person: Person
-    number: Number
+class VerbalBase:
+    infinitive: str
+    group: int | None = None
+    root: str | None = None
+    transitive: bool = False
+    reflexive: bool = False
+    auxiliary: VerbalBase | None = None
+    conjugations: dict[Tense, dict[Person, str]] | None = None
+
+    _regular_conjugations: typing.ClassVar = {
+        Tense.INDICATIVE_PRESENT: {
+            1: ['e', 'es', 'e', 'ons', 'ez', 'ent'],
+            2: ['is', 'is', 'it', 'issons', 'issez', 'issent']
+        },
+        Tense.INDICATIVE_IMPERFECT: {
+            1: ['ais', 'ais', 'ait', 'ions', 'iez', 'aient'],
+            2: ['issais', 'issais', 'issait', 'issions', 'issiez', 'issaient']
+        },
+        Tense.PAST_PARTICIPLE: {
+            1: {None: 'é'},
+            2: {None, 'i'},
+        },
+    }
+    _auxiliaries: typing.ClassVar[dict[str, VerbalBase]] = {}
+
+    def __post_init__(self):
+        if self.group is None:
+            self.group = 1
+            if self.infinitive.endswith('ir'):
+                self.group = 2
+        if self.root is None:
+            m = re.search(r'(.+)[ei]r$', self.infinitive)
+            if m is not None:
+                self.root = m.group(1)
+            else:
+                self.root = self.infinitive
+        if self.group == 3 and self.conjugations is None:
+            raise ValueError(
+                "{self}: self.group = 3 but self.conjugations is None")
+        if self.auxiliary is None:
+            if self.infinitive in ('avoir', 'être'):
+                if not self.infinitive in self._auxiliaries:
+                    self._auxiliaries[self.infinitive] = self
+                self.auxiliary = self._auxiliaries['avoir']
+            elif self.reflexive:
+                self.auxiliary = self._auxiliaries['être']
+            else:
+                self.auxiliary = self._auxiliaries['avoir']
+
+    def conjugate(self, tense: Tense, person: Person | None, number: Number = Number.SINGULAR):
+        # TODO: reflexive verbs
+        if tense in (Tense.INFINITIVE, Tense.PAST_PARTICIPLE):
+            person_key = None
+        else:
+            person_key = person.value
+            if number == Number.PLURAL:
+                person_key += 3
+
+        if tense == Tense.INFINITIVE:
+            return self.infinitive
+        elif tense == Tense.INDICATIVE_COMPOUND_PAST:
+            aux = self.auxiliary.conjugate(Tense.INDICATIVE_PRESENT, person, number)
+            participle = self.conjugate(Tense.PAST_PARTICIPLE, None)
+            return f'{aux} {participle}'
+        elif self.group == 3:
+            return self.conjugations[tense][person_key]
+        else:
+            return f'{self.root}{self._regular_conjugations[tense][self.group][person_key]}'
+
+avoir_base = VerbalBase(
+    'avoir',
+    group=3,
+    root='',
+    transitive=True,
+    reflexive=False,
+    conjugations={
+        Tense.INDICATIVE_PRESENT: ['ai', 'as', 'a', 'avons', 'avez', 'ont'],
+        Tense.INDICATIVE_IMPERFECT: ['avais', 'avais', 'avait', 'avions', 'aviez', 'avaient'],
+        Tense.PAST_PARTICIPLE: {None: 'eu'},
+    },
+)
+etre_base = VerbalBase(
+    'être',
+    group=3,
+    root='',
+    transitive=True,
+    reflexive=False,
+    conjugations={
+        Tense.INDICATIVE_PRESENT: ['suis', 'es', 'est', 'sommes', 'êtes', 'sont'],
+        Tense.INDICATIVE_IMPERFECT: ['étais', 'étais', 'était', 'étions', 'étiez', 'étaient'],
+        Tense.PAST_PARTICIPLE: {None: 'été'},
+    },
+)
+
+
+@dataclass
+class Verb:
+    base: VerbalBase
+    tense: Tense
+    person: Person | None = None
+    number: Number | None = None
+    string: str = None
+
+    def __post_init__(self):
+        self.string = self.base.conjugate(self.tense, self.person, self.number)
+
 
 
 @dataclass
@@ -246,24 +357,6 @@ verbes = {
     'enclencher': {'groupe': 1, 'radical': 'enclench', 'transitif': True, 'pronominal': False},
 }
 verbes_transitifs = [k for k, v in verbes.items() if v['transitif']]
-conjugaisons = {
-    'indicatif': {
-        'present': {
-            1: ['e', 'es', 'e', 'ons', 'ez', 'ent'],
-            2: ['is', 'is', 'it', 'issons', 'issez', 'issent']
-        },
-        'imparfait': {
-            1: ['ais', 'ais', 'ait', 'ions', 'iez', 'aient'],
-            2: ['issais', 'issais', 'issait', 'issions', 'issiez', 'issaient']
-        }
-    },
-    'participe': {
-        'passe': {
-            1: 'é',
-            2: 'i',
-        },
-    }
-}
 
 temps_implementes = {'present': "Présent de l'indicatif",
                      'imparfait': "Imparfait de l'indicatif",
@@ -324,41 +417,6 @@ structures_phrase = [['sgn', 'v', 'adv'], ['sgn', 'v'], ['sgn', 'vt', 'cod'], ['
 
 class EmptyRootError(NameError):
     pass
-
-
-def noun_group(specifier=None, noun=None, adj=None, genre=None, number=None):
-    '''Renvoie un groupe nominal (gn) dont on peut spécifier certaines choses'''
-    # Genre detection
-    if genre is None:
-        genre = next((w.genre for w in [specifier, noun, adj] if w is not None), None)
-        if genre is None:
-            genre = random.choice(list(Genre))
-
-    if number is None:
-        number = next((w.number for w in [specifier, noun, adj] if w is not None), None)
-        if number is None:
-            number = random.choice(list(Number))
-
-    if specifier is None:
-        specifier = Specifier(
-            random.choice(determinants[genre]) if number == Number.SINGULAR else random.choice(determinants[number]),
-            genre=genre, number=number)
-    if adj is None:
-        adj = Adjective(random.choice(adjectifs[genre]), genre=genre, number=number)
-    if noun is None:
-        noun = Noun(random.choice(noms[genre]), genre=genre, number=number)
-
-    # Plural
-    if number == Number.PLURAL:
-        adj = adj.plural()
-        noun = noun.plural()
-
-    if adj.before_noun:
-        words = [specifier, adj, noun]
-    else:
-        words = [specifier, noun, adj]
-
-    return NounGroup(words=words)
 
 
 def conjugaison(verbe, personne=None, temps='present', *,
@@ -515,8 +573,8 @@ si le verbe est du troisième groupe, conjugaisons (list).""")
             sujet = random.choice(list(pronoms_personnels.keys()))
             personne = pronoms_personnels[sujet]
         else:
-            sujet = noun_group()
-            personne = 2 if sujet['nombre'] == 's' else 5
+            sujet = NounGroup()
+            personne = Person.THIRD_PERSON
     elif isinstance(sujet, str):
         personne = pronoms_personnels[sujet]
     else:
