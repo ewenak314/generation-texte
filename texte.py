@@ -32,6 +32,14 @@ import typing
 VOWELS = 'aeiouyéèà'
 
 
+class Chunk:
+    def match_to_following_chunk(self, chunk: Chunk):
+        return self.match_to_following_string(str(chunk))
+
+    def match_to_following_string(self, string):
+        return f'{self} '
+
+
 class Genre(Enum):
     FEMININE = auto()
     MASCULINE = auto()
@@ -57,11 +65,11 @@ class Tense(Enum):
 
 
 @dataclass
-class Word:
+class Word(Chunk):
     string: str
 
-    def match_to_following_word(self, word: Word | str) -> str:
-        return f'{self.string} '
+    def __str__(self):
+        return self.string
 
 
 class PluralMixin:
@@ -125,13 +133,11 @@ class Specifier(Word):
         'ce': 'cet ',
     }
 
-    def match_to_following_word(self, word: Word | str) -> str:
-        if isinstance(word, Word):
-            word = word.string
-        if (word[0] in VOWELS
+    def match_to_following_string(self, string: str) -> str:
+        if (string[0] in VOWELS
             and self.string in self._modified_before_vowels_list):
             return self._modified_before_vowels_list[self.string]
-        return super().match_to_following_word(word)
+        return super().match_to_following_string(string)
 
 
 @dataclass
@@ -148,12 +154,10 @@ class Adjective(Word, PluralMixin):
     def before_noun(self):
         return self.string in self._before_noun_list
 
-    def match_to_following_word(self, word: Word | str) -> str:
-        if isinstance(word, Word):
-            word = word.string
-        if word[0] in VOWELS and word in self._modified_before_vowels_list:
-            return self._modified_before_vowels_list[word]
-        return super().match_to_following_word(word)
+    def match_to_following_string(self, string: str) -> str:
+        if string[0] in VOWELS and self.string in self._modified_before_vowels_list:
+            return self._modified_before_vowels_list[self.string]
+        return super().match_to_following_string(string)
 
 
 @dataclass
@@ -177,7 +181,7 @@ class VerbalBase:
         },
         Tense.PAST_PARTICIPLE: {
             1: {None: 'é'},
-            2: {None, 'i'},
+            2: {None: 'i'},
         },
     }
     _auxiliaries: typing.ClassVar[dict[str, VerbalBase]] = {}
@@ -259,7 +263,7 @@ etre_base = VerbalBase(
 
 
 @dataclass
-class Verb:
+class Verb(Chunk):
     base: VerbalBase
     tense: Tense
     person: Person | None = None
@@ -269,19 +273,42 @@ class Verb:
     def __post_init__(self):
         self.string = self.base.conjugate(self.tense, self.person, self.number)
 
+    def __str__(self):
+        return self.string
+
 
 
 @dataclass
-class WordGroup:
-    words: list[Word]
+class ChunkGroup(Chunk):
+    chunks: list[Chunk]
+
+    def match_to_following_chunk(self, chunk=None):
+        iterator = iter(self.chunks[::-1])
+        word_list = []
+        if chunk is None:
+            prev_chunk = next(iterator)
+            word_list.append(str(prev_chunk))
+        else:
+            prev_chunk = chunk
+
+        for word in iterator:
+            word_list.append(word.match_to_following_chunk(prev_chunk))
+            prev_chunk = word
+
+        return ''.join(word_list[::-1])
 
     def __str__(self):
-        word_string = []
-        prev_word = self.words[0]
-        for word in self.words:
-            word_string.append(word.match_to_following_word(prev_word))
-            prev_word = word
-        return ''.join(word_string)
+        return self.match_to_following_chunk(None)
+
+
+class WordGroup(ChunkGroup):
+    @property
+    def words(self):
+        return self.chunks
+
+    @words.setter
+    def words(self, value):
+        self.chunks = value
 
 
 @dataclass
@@ -348,6 +375,11 @@ class NounGroup(WordGroup):
             *(adj for adj in self.adjectives if adj.before_noun),
             self.noun,
             *(adj for adj in self.adjectives if not adj.before_noun)]
+
+
+class Sentence(ChunkGroup):
+    pass
+
 
 # Données
 
