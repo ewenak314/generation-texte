@@ -141,6 +141,76 @@ class Specifier(Word):
 
 
 @dataclass
+class Pronoun(Word):
+    genre: Genre | None
+    number: Number
+    person: Person
+
+    _pronoun_data: typing.ClassVar = {}
+
+    @classmethod
+    def register_pronouns(cls, pronouns):
+        for p in pronouns:
+            cls._pronoun_data[p.string] = p
+
+    def __new__(cls, string=None, genre=None, number=None, person=None):
+        if cls is not Pronoun:
+            if not getattr(cls, '_instances', None):
+                cls._instances = []
+            if string is None:
+                for instance in cls._instances:
+                    if ((instance.genre is None or instance.genre == genre)
+                        and instance.number == number and instance.person == person):
+                        return instance
+                else:
+                    raise ValueError(f"Couldn't find any pronoun matching the genre, number and person you specified")
+            obj = object.__new__(cls)
+            cls._instances.append(obj)
+            return obj
+        if string is None:
+            raise TypeError("Can't create a pronoun without string in base pronoun class. Use a subclass.")
+        p = cls._pronoun_data.get(string)
+        if p is None:
+            raise ValueError(f"Unknown pronoun {string}. Build it with the correct pronoun subclass")
+        return p
+
+    def __init__(self, string=None, genre=None, number=None, person=None):
+        if getattr(self, '_init_done', False):
+            # We're just getting init'ed again after having been found through Pronoun._pronouns_data
+            return
+        self._init_done = True
+        if not all(a is not None for a in (number, person)):
+            raise TypeError("Only a pronoun's genre and string may be None")
+        self.string = string
+        self.genre = genre
+        self.number = number
+        self.person = person
+
+    @classmethod
+    def random(cls, genre, number, person):
+        if cls is Pronoun:
+            raise
+        return cls(genre=genre, number=number, person=person)
+
+
+class SubjectPronoun(Pronoun):
+    pass
+
+
+SubjectPronoun.register_pronouns((
+    SubjectPronoun('je', None, Number.SINGULAR, Person.FIRST_PERSON),
+    SubjectPronoun('tu', None, Number.SINGULAR, Person.SECOND_PERSON),
+    SubjectPronoun('il', Genre.MASCULINE, Number.SINGULAR, Person.THIRD_PERSON),
+    SubjectPronoun('elle', Genre.FEMININE, Number.SINGULAR, Person.THIRD_PERSON),
+    SubjectPronoun('on', None, Number.SINGULAR, Person.THIRD_PERSON),
+    SubjectPronoun('nous', None, Number.PLURAL, Person.FIRST_PERSON),
+    SubjectPronoun('vous', None, Number.PLURAL, Person.SECOND_PERSON),
+    SubjectPronoun('ils', Genre.MASCULINE, Number.PLURAL, Person.THIRD_PERSON),
+    SubjectPronoun('elles', Genre.FEMININE, Number.PLURAL, Person.THIRD_PERSON),
+))
+
+
+@dataclass
 class Adjective(Word, PluralMixin):
     genre: Genre
     number: Number
@@ -375,6 +445,33 @@ class NounGroup(WordGroup):
             *(adj for adj in self.adjectives if adj.before_noun),
             self.noun,
             *(adj for adj in self.adjectives if not adj.before_noun)]
+
+    @classmethod
+    def random(cls, **kwargs):
+        return cls(number=kwargs.get('number'), genre=kwargs.get('genre'))
+
+
+class FunctionWordGroup(WordGroup):
+    def __init__(self, chunk=None, **kwargs):
+        if chunk is None:
+            chunk = random.choice(self.DEFAULT_CHUNK_TYPES)
+
+        if isinstance(chunk, Chunk):
+            self.chunks = [chunk]
+        else:
+            if set(kwargs.keys()) != self.ARGS:
+                raise TypeError(f"Exactly the following arguments should be passed to {self.__class__}: {self.ARGS}")
+            self.chunks = [chunk.random(**kwargs)]
+
+
+class DirectObject(FunctionWordGroup):
+    DEFAULT_CHUNK_TYPES = (NounGroup,)
+    ARGS = {'genre', 'number'}
+
+
+class Subject(FunctionWordGroup):
+    DEFAULT_CHUNK_TYPES = (NounGroup, SubjectPronoun)
+    ARGS = {'genre', 'number', 'person'}
 
 
 class Sentence(ChunkGroup):
